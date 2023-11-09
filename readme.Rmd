@@ -1,0 +1,8 @@
+---
+title: "readme"
+author: "Ryan Meyer"
+date: "2023-11-09"
+output: html_document
+---
+
+This R project contains the data, analysis, and output for the 2023 NREC decomposition study. The project is organized into the data folder which contains raw data. The figures folder which contains completed figures for posters/publications. The output folder which contains cleaned data, and the scripts folder which contains the scripts to run all the code. The scripts in the script folder are organized numerically with 01 starting as the import and cleaning of the raw data. The full analysis of the data should follow numerical order from 01 import and clean, 02 analysis, 03 figures. If more steps are needed they can be added. 
