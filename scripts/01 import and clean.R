@@ -2,11 +2,13 @@
 library(tidyverse)
 library(readxl)
 library(patchwork)
+library(janitor)
 
 # READ IN THE DATA----
 
 # decomp data
-raw.df <- read_excel("data/Meyer_nrec2023decompbagdata.xlsx")
+raw.df <- read_excel("data/Meyer_nrec2023decompbagdata.xlsx") %>% 
+  clean_names()
 
 # initial tea weights
 tea.df <- read_excel("data/tea wt.xlsx")
@@ -14,6 +16,14 @@ tea.df <- read_excel("data/tea wt.xlsx")
 # CLEAN DATA ----
 
 # cleaning the tea data ----
+# for the raw data need to get initial biomass wet and final biomass wt
+
+raw.df <- raw.df %>%
+  
+
+
+
+
 
 # taking only the tea columns that i want
 tea.df <- tea.df %>%
