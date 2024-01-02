@@ -24,9 +24,12 @@ raw.df <- raw.df %>%
   mutate(initial_drywt_g = bag_no_staple - bag_no) %>%
   mutate(final_drywt_g = dry_no_staple) 
 
+raw.df <- raw.df %>%
+  mutate(final_drywt_g = as.numeric(final_drywt_g))
+
 # remove the unnecessary columns and save final dataframe to csv file
 final.df <- raw.df %>% 
-  select(location, plot, crop, bag_no, series_no, block, initial_drywt_g, final_drywt_g)
+  select(location, plot, crop, bag_no, series_no, block, sample_time, initial_drywt_g, final_drywt_g)
 
 write_csv(final.df, "output/nrec_decomp_2_final_df.csv")
 
