@@ -44,7 +44,28 @@ raw.df %>%
 raw.df <- raw.df %>%
   na.omit()
 
+# remove the unnecessary columns and save final dataframe to csv file
+final.df <- raw.df %>% 
+  select(location, plot, crop, bag_no, series_no, block, sample_time, initial_drywt_g, final_drywt_g)
 
+write_csv(final.df, "output/nrec_decomp_2_final_df.csv")
+
+# Now to clean the Tea dataframe and merge with the initial weights
+tea_final_drywt.df <- raw.df %>% 
+  select(location, plot, crop, bag_no, series_no, block, tea_id, tea_final ) %>% 
+  mutate(crop = tolower(crop),
+         location = tolower(location)) 
+
+tea_final.df <- full_join(tea.df, tea_final_drywt.df, by = c("tea_id", "crop", "block"))
+
+# taking only the tea columns that we want and reorder
+tea_final.df <- tea_final.df %>%
+  select(location, crop, plot, block, number, bag_no, series_no, tea_id,
+         tea_initial_drywt_g = initial_dry_wt_g,
+         tea_final_drywt_g = tea_final, notes
+  )
+
+write_csv(tea_final.df, "output/tea_final_drywts.csv")
 
 
 
