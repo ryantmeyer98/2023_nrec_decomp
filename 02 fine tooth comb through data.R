@@ -18,14 +18,25 @@ forage.df <- forage.df %>%
   mutate(forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100)
 
 # calculate the % mass remaining for tea bags
-forage.df <- forage.df %>%
+tea.df <- tea.df %>%
   mutate(tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100)
 
-# STARTING WITH ISU DATASET ----
+# STARTING WITH FORAGE DATASET ----
 
 # wanna see how stuff looks
+
+# ISU
 forage.df %>%
   filter(location == "isu") %>%
+  ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop)) +
+  # stat_summary(fun = mean, geom = "point", position = position_dodge2(width = 0.5)) +
+  # stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.5,
+  #              position = position_dodge2(width = 0.5)) +
+  stat_summary(fun = mean, geom = "line", position = position_dodge2(width = 0.5))
+
+# WIU
+forage.df %>%
+  filter(location == "wiu") %>%
   ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop)) +
   # stat_summary(fun = mean, geom = "point", position = position_dodge2(width = 0.5)) +
   # stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.5,
@@ -56,15 +67,24 @@ forage.df <- forage.df %>%
            bag_no != 75 | bag_no != 124 | bag_no != 21 | bag_no != 107 | bag_no != 165 | bag_no != 156 | 
            bag_no != 323)
 
-# now lets get our figure from above and see how this looks with things cleaned up a bit
+# so things are looking good i wanna see what the standard error for some of these odd looking data
 forage.df %>%
   filter(location == "isu") %>%
-  ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop)) +
-  # stat_summary(fun = mean, geom = "point", position = position_dodge2(width = 0.5)) +
-  # stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.5,
-  #              position = position_dodge2(width = 0.5)) +
-  stat_summary(fun = mean, geom = "line", position = position_dodge2(width = 0.5))
+  ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop, shape = as.factor(block))) +
+  stat_summary(fun = mean, geom = "line") +
+  geom_point(size = 2, position = position_dodge2(width = 0.2)) +
+  ggtitle("ISU") +
+  facet_wrap(~crop)
 
+# what about wiu? 
+forage.df %>%
+  filter(location == "wiu") %>%
+  ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop, shape = as.factor(block))) +
+  stat_summary(fun = mean, geom = "line") +
+  geom_point(size = 2, position = position_dodge2(width = 0.2)) +
+  ggtitle("wiu") +
+  facet_wrap(~crop)
 
+# TEA BAGS
 
 
