@@ -27,7 +27,8 @@ raw.df <- raw.df %>%
 
 # convert the dry bag with no staple weight to a number
 raw.df <- raw.df %>%
-  mutate(dry_no_staple = as.numeric(dry_no_staple))
+  mutate(dry_no_staple = as.numeric(dry_no_staple)) %>%
+  mutate(dry_no_staple = dry_wt_g - staple_weight)
 
 # calculate initial dry and initial final weights
 raw.df <- raw.df %>%
@@ -129,8 +130,8 @@ rm(forage_cn, pct_cn, tea_cn, test.df)
 
 # calculate percent remaining and proportions
 full.df <- full.df %>%
-  mutate(forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100) %>%
-  mutate(tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100) 
+  mutate(forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100, na.rm = TRUE) %>%
+  mutate(tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100, na.rm = TRUE) 
 
 # calculate percent c and n remaining
 
@@ -151,7 +152,7 @@ forage_initial_prop_c <- full.df %>%
 
 # multiply each sample by the initial proportion of carbon to get the initial for every sample
 full.df <- full.df %>%
-  mutate(forage_initial_prop_c = case_when(
+  mutate(forage_initial_carbon = case_when(
     crop == "ar" ~ forage_initial_drywt_g * 0.4190000,
     crop == "cr" ~ forage_initial_drywt_g * 0.4252500, 
     crop == "gpc" ~ forage_initial_drywt_g * 0.4400000, 
@@ -161,11 +162,11 @@ full.df <- full.df %>%
 
 # now we take the final weight and multiply by the collected proportion to get collected c
 full.df <- full.df %>%
-  mutate(forage_collected_prop_c = forage_initial_drywt_g * forage_prop_c)
+  mutate(forage_final_carbon = forage_final_drywt_g * forage_prop_c)
 
 # finally, divide initial vby collected to get prop c remaining and multiply by 100 for pct
 full.df <- full.df %>%
-  mutate(forage_prop_c_remain = forage_collected_prop_c / forage_initial_prop_c) %>%
+  mutate(forage_prop_c_remain = forage_final_carbon / forage_initial_carbon) %>%
   mutate(forage_pct_c_remain = forage_prop_c_remain * 100)
   
 
@@ -189,6 +190,8 @@ full.df %>%
   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  geom_point() +
+  geom_smooth() +
   facet_grid(crop~location)
 
 full.df %>%
