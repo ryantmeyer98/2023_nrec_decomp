@@ -9,7 +9,7 @@ forage.df <- biomass.df %>%
   select(-c(tea_id, tea_final_drywt_g, tea_initial_drywt_g))
 
 tea.df <- biomass.df %>%
-  select(-c(bag_no, forage_initial_drywt_g, forage_final_drywt_g))
+  select(-c(tea_id, forage_initial_drywt_g, forage_final_drywt_g))
 
 # MODIFICATIONS ----
 
@@ -20,6 +20,9 @@ forage.df <- forage.df %>%
 # calculate the % mass remaining for tea bags
 tea.df <- tea.df %>%
   mutate(tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100)
+
+# ALL OF THE ABOVE SHOULD GO IN 01 and then save to a final tea and forage Df and 
+# then do the stuff to below in separeate code sheets!!!
 
 # STARTING WITH FORAGE DATASET ----
 
