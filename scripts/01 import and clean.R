@@ -185,55 +185,55 @@ write_csv(full.df, "output/clean_drywts.csv")
 # 
 # tea_initial_prop_n <- full.df 
 # 
-# # 
-# # finally divide initial by collected to get prop n remaining then * 100 for pct
-# full.df <- full.df %>%
-#   mutate(prop_c_remain = collected_prop_c / initial_prop_c) %>%
-#   mutate(pct_c_remaing = prop_c_remain * 100)
+#
+# finally divide initial by collected to get prop n remaining then * 100 for pct
+full.df <- full.df %>%
+  mutate(prop_c_remain = collected_prop_c / initial_prop_c) %>%
+  mutate(pct_c_remaing = prop_c_remain * 100)
 
 
-# 
-# # some preliminary plotting to see how things look, are we fucked?
-# full.df %>%
-#   ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop)) +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
-#   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
-#   geom_point() +
-#   geom_smooth() +
-#   facet_grid(crop~location)
-# 
-# full.df %>%
-#   ggplot(aes(sample_time, forage_pct_n, color = crop, group = crop)) +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
-#   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
-#   facet_grid(crop~location)
-# 
-# full.df %>%
-#   ggplot(aes(sample_time, forage_pct_c_remain, color = crop, group = crop)) +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
-#   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
-#   facet_grid(crop~location)
-# 
-# full.df %>%
-#   ggplot(aes(sample_time, tea_pct_remain, color = crop, group = crop)) +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
-#   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
-#   facet_grid(crop~location)
-# 
-# full.df %>%
-#   ggplot(aes(sample_time, tea_pct_c, color = crop, group = crop)) +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
-#   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
-#   facet_grid(crop~location)
-# 
-# full.df %>%
-#   ggplot(aes(sample_time, tea_pct_n, color = crop, group = crop)) +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-#   stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
-#   stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
-#   facet_grid(crop~location)
+
+# some preliminary plotting to see how things look, are we fucked?
+full.df %>%
+  ggplot(aes(sample_time, forage_pct_remain, color = crop, group = crop)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  geom_point() +
+  geom_smooth() +
+  facet_grid(crop~location)
+
+full.df %>%
+  ggplot(aes(sample_time, forage_pct_n, color = crop, group = crop)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  facet_grid(crop~location)
+
+full.df %>%
+  ggplot(aes(sample_time, forage_pct_c_remain, color = crop, group = crop)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  facet_grid(crop~location)
+
+full.df %>%
+  ggplot(aes(sample_time, tea_pct_remain, color = crop, group = crop)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  facet_grid(crop~location)
+
+full.df %>%
+  ggplot(aes(sample_time, tea_pct_c, color = crop, group = crop)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  facet_grid(crop~location)
+
+full.df %>%
+  ggplot(aes(sample_time, tea_pct_n, color = crop, group = crop)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line") +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar") +
+  facet_grid(crop~location)
