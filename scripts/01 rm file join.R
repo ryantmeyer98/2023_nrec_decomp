@@ -84,6 +84,13 @@ full.df <- left_join(full.df, forage_cn.df, by = "forage_id")
 # foin the pct data to the tea bags
 full.df <- left_join(full.df, tea_cn.df, by = "tea_id")
 
+# SAVE OUTPUT ----
+write_csv(full.df, file = "output/cleaned raw data.csv")
+
+
+
+
+
 
 
 
