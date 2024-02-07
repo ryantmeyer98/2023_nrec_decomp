@@ -141,7 +141,7 @@ reduced_long.df %>%
   stat_summary(fun = mean, geom = "line", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
   stat_summary(fun = mean, geom = "line", na.rm = TRUE) +
-  facet_grid(location ~ crop)
+  facet_grid(location ~ variable)
 
 
 
