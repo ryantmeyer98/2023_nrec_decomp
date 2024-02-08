@@ -25,7 +25,7 @@ tea.df %>%
   group_by(tea_id) %>%
   filter(n() > 1) %>% summarize(n = n())
 
-# cn data ----
+# cn data ---- # would be good to keep -BP
 cn.df %>%
   group_by(id) %>%
   filter(n() > 1) %>% summarize(n = n())
@@ -38,8 +38,8 @@ cn.df %>%
 
 # there are a few extra columns in the tea datasheet to remove, doing that here, also clean names up
 tea.df <- tea.df %>%
-  select(tea_id, initial_dry_wt_g) %>%
-  rename(tea_initial_drywt_g = initial_dry_wt_g) %>%
+  select(tea_id, tea_initial_drywt_g =initial_dry_wt_g) %>%
+  # rename(tea_initial_drywt_g = initial_dry_wt_g) %>% # you can remove this and rename above -BP
   mutate(tea_id = as.numeric(tea_id))
 
 # cleaning forage dataset ----
@@ -53,7 +53,7 @@ forage.df <- forage.df %>%
 
 # next we have to remove the data checks (d) from USDA lab
 cn.df <- cn.df %>%
-  filter(id != "d")
+  filter(id != "d") # I would keep these !!! -BP as suggested in prior email
 
 # we then need to split by tea and forage data and remove the F and T
 tea_cn.df <- cn.df %>%
