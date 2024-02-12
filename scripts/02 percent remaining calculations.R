@@ -21,111 +21,8 @@ decomp.df <- decomp.df %>%
 
 # CALCULATE PERCENT MASS REMAINING ----
 
-# first we have to remove places where the sample was lost sample
-decomp.df <- decomp.df %>%
-  filter(!is.na(sample_time))
-
-bill.df <- decomp.df
-
-decomp.df <- decomp.df %>%
-  mutate(forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100) %>%
-  mutate(tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100)
-
-# now we need to get the percent remaining for the carbon and the nitrogen ----
-
-# first get everything to a proportion
-decomp.df <- decomp.df %>%
-  mutate(forage_prop_c = forage_pct_c / 100,
-         forage_prop_n = forage_pct_n / 100,
-         tea_prop_c = tea_pct_c / 100, 
-         tea_prop_n = tea_pct_n / 100)
-
-# forage carbon
-forage_initial_prop_c <- decomp.df %>%
-  filter(sample_time == "t0") %>%
-  group_by(crop) %>%
-  summarize(forage_initial_prop_c = mean(forage_prop_c, na.rm = TRUE))
-# AR: 0.41900 CR: 0.42525 GPC: 0.44000 PCRO: 0.44900 WPC: 0.43150
-
-# forage nitrogen
-forage_initial_prop_n <- decomp.df %>%
-  filter(sample_time == "t0") %>%
-  group_by(crop) %>%
-  summarize(forage_initial_prop_n = mean(forage_prop_n, na.rm = TRUE))
-# AR: 0.025275; CR 0.019650; GPC 0.022400; PCRO 0.042500; WPC 0.026650
-
-# tea carbon
-tea_initial_prop_c <- decomp.df %>%
-  filter(sample_time == "t0") %>%
-  group_by(crop) %>%
-  summarize(tea_initial_prop_c = mean(tea_prop_c, na.rm = TRUE))
-# AR: 0.4902500; CR: 0.4682500; GPC: 0.4793333; PCRO: 0.4218333; WPC: 0.4680000
-
-# tea nitrogen
-tea_initial_prop_n <- decomp.df %>%
-  filter(sample_time == "t0") %>%
-  group_by(crop) %>%
-  summarize(tea_initial_prop_n = mean(tea_prop_n, na.rm = TRUE))
-# AR: 0.04180000; CR: 0.03485000; GPC:0.04123333; PCRO: 0.03406667 WPC: 0.03970000
-
-# multiply each sample by the initial proportion of carbon to get the initial for every sample
-
-# forage carbon
-decomp.df <- decomp.df %>%
-  mutate(forage_initial_carbon_g = case_when(
-    crop == "AR" ~ forage_initial_drywt_g * 0.41900,
-    crop == "CR" ~ forage_initial_drywt_g * 0.42525, 
-    crop == "GPC" ~ forage_initial_drywt_g * 0.44000, 
-    crop == "PCRO" ~ forage_initial_drywt_g * 0.44900, 
-    crop == "WPC" ~ forage_initial_drywt_g * 0.43150
-  ))
-
-# forage nitrogen
-decomp.df <- decomp.df %>%
-  mutate(forage_initial_nitrogen_g = case_when(
-    crop == "AR" ~ forage_initial_drywt_g * 0.025275,
-    crop == "CR" ~ forage_initial_drywt_g * 0.019650, 
-    crop == "GPC" ~ forage_initial_drywt_g * 0.022400, 
-    crop == "PCRO" ~ forage_initial_drywt_g * 0.042500, 
-    crop == "WPC" ~ forage_initial_drywt_g * 0.026650
-  ))
-# tea carbon
-decomp.df <- decomp.df %>%
-  mutate(tea_initial_carbon_g = case_when(
-    crop == "AR" ~ tea_initial_drywt_g * 0.4902500,
-    crop == "CR" ~ tea_initial_drywt_g * 0.4682500, 
-    crop == "GPC" ~ tea_initial_drywt_g * 0.4793333, 
-    crop == "PCRO" ~ tea_initial_drywt_g * 0.4218333, 
-    crop == "WPC" ~ tea_initial_drywt_g * 0.4680000
-  ))
-
-# tea nitrogen
-decomp.df <- decomp.df %>%
-  mutate(tea_initial_nitrogen_g = case_when(
-    crop == "AR" ~ tea_initial_drywt_g * 0.04180000,
-    crop == "CR" ~ tea_initial_drywt_g * 0.03485000, 
-    crop == "GPC" ~ tea_initial_drywt_g * 0.04123333, 
-    crop == "PCRO" ~ tea_initial_drywt_g * 0.03406667, 
-    crop == "WPC" ~ tea_initial_drywt_g * 0.03970000
-  ))
-
-# now we take the final weight and multiply by the collected proportion to get collected c
-decomp.df <- decomp.df %>%
-  mutate(forage_final_carbon_g = forage_final_drywt_g * forage_prop_c,
-         forage_final_nitrogen_g = forage_final_drywt_g * forage_prop_n,
-         tea_final_carbon_g = tea_final_drywt_g * tea_prop_c,
-         tea_final_nitrogen_g = tea_final_drywt_g * tea_prop_n)
-
-# calculate the percent remaining
-decomp.df <- decomp.df %>%
-  mutate(forage_pct_c_remain = (forage_final_carbon_g / forage_initial_carbon_g) * 100) %>%
-  mutate(forage_pct_n_remain = (forage_final_nitrogen_g / forage_initial_nitrogen_g) * 100) %>%
-  mutate(tea_pct_n_remain = (tea_final_carbon_g / tea_initial_carbon_g) * 100) %>%
-  mutate(tea_pct_c_remain = (tea_final_nitrogen_g / tea_initial_nitrogen_g) * 100)
-
-# BILL'S METHOD ----
 # forage bags ----
-bill.df <- decomp.df %>%
+decomp.df <- decomp.df %>%
   mutate(
     forage_mass_loss = forage_initial_drywt_g - forage_final_drywt_g,
     forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100) %>%
@@ -146,7 +43,7 @@ bill.df <- decomp.df %>%
          forage_pct_n_remain = (forage_final_n_g / forage_initial_n_g) * 100)
 
 # tea bags ----
-bill.df <- bill.df %>%
+decomp.df <- decomp.df %>%
   # tea percent remaining
   mutate(
     tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g,
@@ -177,12 +74,20 @@ decomp_reduced.df %>%
   facet_grid(location~crop)
 
 # bill to look at 
-bill.df %>%
+decomp.df %>%
   ggplot(aes(sample_time, tea_pct_n_remain, color = crop)) +
   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
   geom_point(na.rm = TRUE) +
   facet_grid(location~crop)
+
+bill.df %>%
+  ggplot(aes(sample_time, tea_pct_remain, color = location, group = location)) +
+  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  stat_summary(fun = mean, geom = "line", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  facet_wrap(~crop)
 
 # now lets select out the columns we care about
 decomp_reduced.df <- decomp.df %>%
