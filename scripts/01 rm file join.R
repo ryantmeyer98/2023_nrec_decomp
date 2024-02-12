@@ -8,7 +8,8 @@ library(readxl)
 forage.df <- read_excel("data/23 nrec decomp biomass.xlsx")
 
 # tea bags
-tea.df <- read_excel("data/tea wt.xlsx")
+tea.df <- read_excel("data/tea wt.xlsx") %>%
+  rename(tea_initial_drywt_g = initial_dry_wt_g)
 
 # carbon and nitrogen data 
 cn.df <- read_excel("data/usda carbon nitrogen data.xlsx")
@@ -38,8 +39,7 @@ cn.df %>%
 
 # there are a few extra columns in the tea datasheet to remove, doing that here, also clean names up
 tea.df <- tea.df %>%
-  select(tea_id, tea_initial_drywt_g =initial_dry_wt_g) %>%
-  # rename(tea_initial_drywt_g = initial_dry_wt_g) %>% # you can remove this and rename above -BP
+  select(tea_id, tea_initial_drywt_g) %>%
   mutate(tea_id = as.numeric(tea_id))
 
 # cleaning forage dataset ----
@@ -48,6 +48,10 @@ tea.df <- tea.df %>%
 forage.df <- forage.df %>%
   mutate(forage_id = as.numeric(forage_id)) %>%
   mutate(tea_id = as.numeric(tea_id))
+
+# remove places where samples were lost
+forage.df <- forage.df %>%
+  filter(!is.na(sample_time))
 
 # cleaning carbon and nitrogen dataset ----
 
@@ -76,40 +80,20 @@ forage_cn.df <- cn.df %>%
 # JOIN THE DATA ----
 
 # join the tea initials to the tea finals
-full.df <- left_join(forage.df, tea.df, by = "tea_id")
+full.df <- full_join(forage.df, tea.df, by = "tea_id")
 
 # join the pct data to the forage bags
-full.df <- left_join(full.df, forage_cn.df, by = "forage_id")
+full.df <- full_join(full.df, forage_cn.df, by = "forage_id")
 
 # foin the pct data to the tea bags
-full.df <- left_join(full.df, tea_cn.df, by = "tea_id")
+full.df <- full_join(full.df, tea_cn.df, by = "tea_id")
+
+# remove data with no sample time as this indicates that the samples were lost
+full.df <- full.df %>%
+  filter(!is.na(sample_time))
 
 # SAVE OUTPUT ----
 write_csv(full.df, file = "output/cleaned raw data.csv")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
