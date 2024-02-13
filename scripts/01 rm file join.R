@@ -92,6 +92,17 @@ full.df <- full_join(full.df, tea_cn.df, by = "tea_id")
 full.df <- full.df %>%
   filter(!is.na(sample_time))
 
+# REMOVE THE WEIGHTS OF THE BAGS AND THE STAPLES ----
+
+# only for the forage bags, we could not do bag weights for the tea bags bc they came pre-bagged
+full.df <- full.df %>%
+  mutate(forage_initial_drywt_g = forage_initial_drywt_g - (forage_bag_wt_g + staple_weight)) %>%
+  mutate(forage_final_drywt_g = forage_final_drywt_g - (forage_bag_wt_g + staple_weight))
+
+# remove the columns we do not want 
+full.df <- full.df %>%
+  select(-staple_weight)
+
 # SAVE OUTPUT ----
 write_csv(full.df, file = "output/cleaned raw data.csv")
 

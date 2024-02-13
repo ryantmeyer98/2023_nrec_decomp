@@ -11,15 +11,11 @@ decomp.df <- decomp.df %>%
          sample_time = as.factor(sample_time),
          tea_initial_drywt_g = as.numeric(tea_initial_drywt_g))
 
-# REMOVE THE WEIGHTS OF THE BAGS AND THE STAPLES ----
-
-# only for the forage bags, we could not do bag weights for the tea bags bc they came pre-bagged
-decomp.df <- decomp.df %>%
-  mutate(forage_initial_drywt_g = forage_initial_drywt_g - (forage_bag_wt_g + staple_weight)) %>%
-  mutate(forage_final_drywt_g = forage_final_drywt_g - (forage_bag_wt_g + staple_weight))
-
-
 # CALCULATE PERCENT MASS REMAINING ----
+
+# arrange 
+decomp.df <- decomp.df %>%
+  arrange(location, crop, block, sample_time)
 
 # forage bags ----
 decomp.df <- decomp.df %>%
@@ -33,14 +29,24 @@ decomp.df <- decomp.df %>%
 # calculate final weight of nutrient
   mutate(
     forage_final_c_g = forage_prop_c * forage_final_drywt_g,
-    forage_final_n_g = forage_prop_n * forage_final_drywt_g) %>%
-# calculate initial weight of nutrient
-  mutate(
-    forage_initial_c_g = forage_prop_c * forage_initial_drywt_g,
-    forage_initial_n_g = forage_prop_n * forage_initial_drywt_g) %>%
-# calculate percent remainig 
-  mutate(forage_pct_c_remain = (forage_final_c_g / forage_initial_c_g) * 100,
-         forage_pct_n_remain = (forage_final_n_g / forage_initial_n_g) * 100)
+    forage_final_n_g = forage_prop_n * forage_final_drywt_g)
+
+# calculate the initial c for earch group of location, crop, block, using sample time 0 for that group
+decomp.df <- decomp.df %>%
+  group_by(location, crop, block) %>%
+  mutate(forage_initial_c_g = first(forage_final_c_g),
+         forage_initial_n_g = first(forage_final_n_g)) %>%
+  mutate(forage_pct_c_remain = forage_final_c_g / forage_initial_c_g * 100,
+         forage_pct_n_remain = forage_final_n_g / forage_initial_n_g * 100) %>%
+  ungroup()
+
+
+test.df <- decomp.df %>%
+  filter(sample_time == "t0") %>%
+  filter(crop == "AR")
+
+
+# arrange by site crop and time and find the other values so i can fill in the averages
 
 # tea bags ----
 decomp.df <- decomp.df %>%
@@ -61,8 +67,9 @@ decomp.df <- decomp.df %>%
     tea_initial_c_g = tea_prop_c * tea_initial_drywt_g,
     tea_initial_n_g = tea_prop_n * tea_initial_drywt_g) %>%
   # percent remaining
-  mutate(tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100,
-         tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100)
+  mutate(
+    tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100,
+    tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100)
 
 # SOME EARLY PLOTTING ----
 
@@ -118,12 +125,13 @@ reduced_long.df %>%
   ggplot(aes(sample_time, value, color = location, shape = crop)) +
   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  coord_cartesian(ylim = c(50, 100)) +
   facet_grid(variable ~ crop)
 
 
 # for closer viewing
 decomp.df %>%
-  ggplot(aes(sample_time, forage_pct_c_remain, color = crop, group = crop)) +
+  ggplot(aes(sample_time, forage_pct_n_remain, color = crop, group = crop)) +
   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
   coord_cartesian(ylim = (c(50,100))) +
