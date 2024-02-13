@@ -8,14 +8,13 @@ decomp.df <- read_csv("output/cleaned raw data.csv")
 decomp.df <- decomp.df %>%
   mutate(location = as.factor(location),
          crop = as.factor(crop),
-         sample_time = as.factor(sample_time),
          tea_initial_drywt_g = as.numeric(tea_initial_drywt_g))
 
 # CALCULATE PERCENT MASS REMAINING ----
 
-# arrange 
+# arrange - IMPORTANT BECAUSE PCT REMAIN CALC IS POSITIONAL BASED ON T0, THIS MUST BE CORRECT!!!!
 decomp.df <- decomp.df %>%
-  arrange(location, crop, block, sample_time)
+  arrange(location, crop, block, days)
 
 # forage bags ----
 decomp.df <- decomp.df %>%
@@ -32,70 +31,71 @@ decomp.df <- decomp.df %>%
     forage_final_n_g = forage_prop_n * forage_final_drywt_g)
 
 # calculate the initial c for earch group of location, crop, block, using sample time 0 for that group
+# for carbon
 decomp.df <- decomp.df %>%
-  group_by(location, crop, block) %>%
-  mutate(forage_initial_c_g = first(forage_final_c_g),
-         forage_initial_n_g = first(forage_final_n_g)) %>%
-  mutate(forage_pct_c_remain = forage_final_c_g / forage_initial_c_g * 100,
-         forage_pct_n_remain = forage_final_n_g / forage_initial_n_g * 100) %>%
-  ungroup()
+  mutate(forage_initial_c_g = ifelse(days == 0, forage_final_c_g, NA)) %>%
+  fill(forage_initial_c_g, .direction = "down") %>%
+  mutate(forage_pct_c_remain = forage_final_c_g / forage_initial_c_g * 100)
 
-
-test.df <- decomp.df %>%
-  filter(sample_time == "t0") %>%
-  filter(crop == "AR")
-
-
-# arrange by site crop and time and find the other values so i can fill in the averages
+# for nitrogen
+decomp.df <- decomp.df %>%
+  mutate(forage_initial_n_g = ifelse(days == 0, forage_final_n_g, NA)) %>%
+  fill(forage_initial_n_g, .direction = "down") %>%
+  mutate(forage_pct_n_remain = forage_final_n_g / forage_initial_n_g * 100)
 
 # tea bags ----
 decomp.df <- decomp.df %>%
-  # tea percent remaining
   mutate(
-    tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g, 
+    tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g,
     tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100) %>%
-  # turning the percent into a proportion 
+  # calculate proportion of nutrient remaining
   mutate(
     tea_prop_c = tea_pct_c / 100, 
     tea_prop_n = tea_pct_n / 100) %>%
-  # calculate final weight of nutrient per sample
+  # calculate final weight of nutrient
   mutate(
     tea_final_c_g = tea_prop_c * tea_final_drywt_g,
-    tea_final_n_g = tea_prop_n * tea_final_drywt_g) %>%
-  # calculate the initial weight of nutrient per sample
-  mutate(
-    tea_initial_c_g = tea_prop_c * tea_initial_drywt_g,
-    tea_initial_n_g = tea_prop_n * tea_initial_drywt_g) %>%
-  # percent remaining
-  mutate(
-    tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100,
-    tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100)
+    tea_final_n_g = tea_prop_n * tea_final_drywt_g)
+
+# calculate the initial c for earch group of location, crop, block, using sample time 0 for that group
+# for carbon
+decomp.df <- decomp.df %>%
+  mutate(tea_initial_c_g = ifelse(days == 0, tea_final_c_g, NA)) %>%
+  fill(tea_initial_c_g, .direction = "down") %>%
+  mutate(tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100)
+
+# for nitrogen
+decomp.df <- decomp.df %>%
+  mutate(tea_initial_n_g = ifelse(days == 0, tea_final_n_g, NA)) %>%
+  fill(tea_initial_n_g, .direction = "down") %>%
+  mutate(tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100)
+
+# decomp.df <- decomp.df %>%
+#   group_by(location, crop, block, days) %>%
+#   mutate(tea_initial_c_g = first(tea_final_c_g),
+#          tea_initial_n_g = first(tea_final_n_g)) %>%
+#   mutate(tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100,
+#          tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100) %>%
+#   ungroup()
+
+# SELECT COLUMNS WE WILL NOT USE IN THE FUTURE ----
+decomp.df <- decomp.df %>%
+  select(location, crop, block, days, forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain,
+         tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain)
+
+# SAVE THE OUTPUT TO A CSV ----
+write_csv(decomp.df, file = "output/pct remaining data.csv")
+
 
 # SOME EARLY PLOTTING ----
 
 # bill to look at 
 decomp.df %>%
-  ggplot(aes(sample_time, tea_pct_remain, color = crop)) +
+  ggplot(aes(days, tea_pct_n_remain, color = crop)) +
   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  #geom_point(na.rm = TRUE) +
+  geom_point() +
   facet_grid(location~crop)
-
-# nonlinear regression line, bc why not check and see how that looks
-decomp.df %>%
-  ggplot(aes(sample_time, tea_pct_n_remain, color = crop, group = crop)) +
-  stat_smooth(method = "nls", formula = y ~ SSasymp(x, Asym, R0, lrc), se = FALSE) +
-  geom_point(na.rm = TRUE) +
-  facet_grid(location ~ crop) 
-
-
-# LOCATIONS TO CHECK DATA ----
-# my plan is to now create dataframe the contain just each location and crop i want to check
-check.df <- decomp_reduced.df %>%
-  filter(location == "ISU") %>%
-  filter(crop == "CR")
-
-
 
 # PIVOT LONGER ----
 

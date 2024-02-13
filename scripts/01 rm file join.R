@@ -99,9 +99,23 @@ full.df <- full.df %>%
   mutate(forage_initial_drywt_g = forage_initial_drywt_g - (forage_bag_wt_g + staple_weight)) %>%
   mutate(forage_final_drywt_g = forage_final_drywt_g - (forage_bag_wt_g + staple_weight))
 
+# convert t value into the days after placement so that following calculations work
+full.df <- full.df %>%
+  mutate(days = case_when(
+    sample_time == "t0" ~ 0,
+    sample_time == "t1" ~ 4,
+    sample_time == "t2" ~ 6,
+    sample_time == "t3" ~ 8,
+    sample_time == "t4" ~ 12,
+    sample_time == "t5" ~ 16,
+    sample_time == "t6" ~ 20,
+    sample_time == "t7" ~ 25,
+    sample_time == "t8" ~ 30,
+    sample_time == "t9" ~ 35))
+
 # remove the columns we do not want 
 full.df <- full.df %>%
-  select(-staple_weight)
+  select(-c(staple_weight, forage_id, tea_id, forage_bag_wt_g, sample_time))
 
 # SAVE OUTPUT ----
 write_csv(full.df, file = "output/cleaned raw data.csv")
