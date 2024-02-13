@@ -46,7 +46,7 @@ decomp.df <- decomp.df %>%
 decomp.df <- decomp.df %>%
   # tea percent remaining
   mutate(
-    tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g,
+    tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g, 
     tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100) %>%
   # turning the percent into a proportion 
   mutate(
@@ -64,30 +64,33 @@ decomp.df <- decomp.df %>%
   mutate(tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100,
          tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100)
 
-# COMPARISONS ----
-# locations to look at 
-decomp_reduced.df %>%
-  ggplot(aes(sample_time, forage_pct_n_remain, color = crop)) +
-  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  geom_point(na.rm = TRUE) +
-  facet_grid(location~crop)
+# SOME EARLY PLOTTING ----
 
 # bill to look at 
 decomp.df %>%
-  ggplot(aes(sample_time, tea_pct_n_remain, color = crop)) +
+  ggplot(aes(sample_time, tea_pct_remain, color = crop)) +
   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  geom_point(na.rm = TRUE) +
+  #geom_point(na.rm = TRUE) +
   facet_grid(location~crop)
 
-bill.df %>%
-  ggplot(aes(sample_time, tea_pct_remain, color = location, group = location)) +
-  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  stat_summary(fun = mean, geom = "line", na.rm = TRUE) +
+# nonlinear regression line, bc why not check and see how that looks
+decomp.df %>%
+  ggplot(aes(sample_time, tea_pct_n_remain, color = crop, group = crop)) +
+  stat_smooth(method = "nls", formula = y ~ SSasymp(x, Asym, R0, lrc), se = FALSE) +
   geom_point(na.rm = TRUE) +
-  facet_wrap(~crop)
+  facet_grid(location ~ crop) 
+
+
+# LOCATIONS TO CHECK DATA ----
+# my plan is to now create dataframe the contain just each location and crop i want to check
+check.df <- decomp_reduced.df %>%
+  filter(location == "ISU") %>%
+  filter(crop == "CR")
+
+
+
+# PIVOT LONGER ----
 
 # now lets select out the columns we care about
 decomp_reduced.df <- decomp.df %>%
@@ -96,38 +99,10 @@ decomp_reduced.df <- decomp.df %>%
 
 # pivot longer
 reduced_long.df <- decomp_reduced.df %>%
-  pivot_longer(cols = c(forage_pct_remain, tea_pct_remain,forage_pct_c_remaining, forage_pct_n_remaining,
-                        tea_pct_c_remaining, tea_pct_n_remaining),
+  pivot_longer(cols = c(forage_pct_remain, tea_pct_remain,forage_pct_c_remain, forage_pct_n_remain,
+                        tea_pct_c_remain, tea_pct_n_remain),
                names_to = "variable",
                values_to = "value")
-
-# WANT TO DO SOME PRELIMINARY PLOTTING TO FIND ANY WEIRD DATA ----
-
-# plotting it to see how things look
-reduced_long.df %>%
-  ggplot(aes(sample_time, value, color = crop, group = crop)) +
-  stat_summary(fun = mean, geom = "line", na.rm = TRUE) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  stat_summary(fun = mean, geom = "line", na.rm = TRUE) +
-  facet_grid(location ~ variable)
-
-# locations to look at 
-decomp_reduced.df %>%
-  ggplot(aes(sample_time, tea_pct_n_remaining, color = crop)) +
-  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  geom_point(na.rm = TRUE) +
-  facet_grid(location~crop)
-
-# PLACES I NEED TO CHECK THE DATA ----
-
-# forage percent remaining
-# ISU CR T6,7; ISU GPC T7; ISU PCRO T7; ISU WPC T5
-# WIU AR T5,6,9; WIU PCRO T7,9
-
-# forage carbon remaining 
-# ISU AR T1; ISU CR T2; ISU GPC T3; ISU WPC T2,5
-# WIU AR T9; WIU GPC T5; WIU WPC T6
 
 # SAVE OUTPUTS ----
 # percent remaining wide
@@ -136,6 +111,27 @@ write_csv(decomp_reduced.df, file = "output/percent remaining wide.csv")
 
 # pct remaining long
 write_csv(reduced_long.df, file = "output/percent remaining long.csv")
+
+# QUICK PLOTS FOR AG MEETING ----
+# full
+reduced_long.df %>%
+  ggplot(aes(sample_time, value, color = location, shape = crop)) +
+  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  facet_grid(variable ~ crop)
+
+
+# for closer viewing
+decomp.df %>%
+  ggplot(aes(sample_time, forage_pct_c_remain, color = crop, group = crop)) +
+  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  coord_cartesian(ylim = (c(50,100))) +
+  facet_grid(location~crop)
+
+
+
+
 
 
 
