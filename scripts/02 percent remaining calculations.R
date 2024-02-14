@@ -80,7 +80,8 @@ decomp.df <- decomp.df %>%
 
 # REMOVE COLUMNS WE WILL NOT USE IN THE FUTURE ----
 decomp.df <- decomp.df %>%
-  select(location, crop, block, days, forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain,
+  select(forage_id, tea_id, location, crop, block, days, forage_pct_remain, forage_pct_c_remain,
+         forage_pct_n_remain,
          tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain)
 
 # SAVE THE OUTPUT TO A CSV ----
@@ -90,9 +91,27 @@ write_csv(decomp.df, file = "output/pct remaining data.csv")
 
 # bill to look at 
 decomp.df %>%
-  ggplot(aes(days, tea_pct_c_remain, color = crop)) +
+  ggplot(aes(days, forage_pct_c_remain, color = crop)) +
   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
   geom_point() +
   facet_grid(location~crop)
+
+# LOOKING FOR OUTLIERS ----
+outlier.df <- decomp.df %>%
+  filter(location == "WIU") %>%
+  filter(crop == "PCRO")
+
+test.df <- decomp.df %>%
+  filter(location == "WIU") %>%
+  filter(crop == "PCRO") %>%
+  filter(sample_time == "t0")
+
+
+
+
+
+
+
+
 
