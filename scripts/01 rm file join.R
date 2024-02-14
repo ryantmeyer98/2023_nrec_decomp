@@ -35,8 +35,6 @@ cn.df %>%
 
 # MODIFICATIONS PRIOR TO JOINING ----
 
-# cleaning tea dataset ----
-
 # there are a few extra columns in the tea datasheet to remove, doing that here, also clean names up
 tea.df <- tea.df %>%
   select(tea_id, tea_initial_drywt_g) %>%
@@ -54,11 +52,6 @@ forage.df <- forage.df %>%
   filter(!is.na(sample_time))
 
 # cleaning carbon and nitrogen dataset ----
-
-# next we have to remove the data checks (d) from USDA lab
-cn.df <- cn.df %>%
-  filter(id != "d") # I would keep these !!! -BP as suggested in prior email
-
 # we then need to split by tea and forage data and remove the F and T
 tea_cn.df <- cn.df %>%
   filter(str_detect(id, "^T")) %>%

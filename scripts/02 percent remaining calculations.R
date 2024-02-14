@@ -10,6 +10,8 @@ decomp.df <- decomp.df %>%
          crop = as.factor(crop),
          tea_initial_drywt_g = as.numeric(tea_initial_drywt_g))
 
+# SJFADSKLJFADSKLFJDSAKL =====
+
 # CALCULATE PERCENT MASS REMAINING ----
 
 # arrange - IMPORTANT BECAUSE PCT REMAIN CALC IS POSITIONAL BASED ON T0, THIS MUST BE CORRECT!!!!
@@ -91,21 +93,27 @@ write_csv(decomp.df, file = "output/pct remaining data.csv")
 
 # bill to look at 
 decomp.df %>%
-  ggplot(aes(days, forage_pct_c_remain, color = crop)) +
-  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  filter(forage_pct_remain < 100) %>%
+  ggplot(aes(days, forage_pct_remain, color = crop, group = days)) +
+  geom_boxplot() +
+  # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
   geom_point() +
   facet_grid(location~crop)
 
 # LOOKING FOR OUTLIERS ----
 outlier.df <- decomp.df %>%
   filter(location == "WIU") %>%
-  filter(crop == "PCRO")
+  filter(crop == "PCRO") 
 
 test.df <- decomp.df %>%
-  filter(location == "WIU") %>%
-  filter(crop == "PCRO") %>%
-  filter(sample_time == "t0")
+  filter(location == "ISU") %>%
+  filter(crop == "GPC") %>%
+  filter(block == "1") %>%
+  select(location, crop, block, days,
+         forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_prop_n, forage_initial_n_g,
+         forage_final_n_g, forage_pct_n_remain)
+
 
 
 
