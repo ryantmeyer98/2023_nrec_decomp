@@ -10,81 +10,147 @@ decomp.df <- decomp.df %>%
          crop = as.factor(crop),
          tea_initial_drywt_g = as.numeric(tea_initial_drywt_g))
 
-# SJFADSKLJFADSKLFJDSAKL =====
-
 # CALCULATE PERCENT MASS REMAINING ----
 
-# arrange - IMPORTANT BECAUSE PCT REMAIN CALC IS POSITIONAL BASED ON T0, THIS MUST BE CORRECT!!!!
-decomp.df <- decomp.df %>%
-  arrange(location, crop, block, days)
-
 # forage bags ----
+
+# forage bag percent remaining
 decomp.df <- decomp.df %>%
   mutate(
     forage_mass_loss = forage_initial_drywt_g - forage_final_drywt_g,
-    forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100) %>%
-# calculate proportion of nutrient remaining
-  mutate(
-    forage_prop_c = forage_pct_c / 100, 
-    forage_prop_n = forage_pct_n / 100) %>%
-# calculate final weight of nutrient
-  mutate(
-    forage_final_c_g = forage_prop_c * forage_final_drywt_g,
-    forage_final_n_g = forage_prop_n * forage_final_drywt_g)
+    forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100)
 
-# calculate the initial c for earch group of location, crop, block, using sample time 0 for that group
-# for carbon
+# proportion of nutrient remaining 
 decomp.df <- decomp.df %>%
-  group_by(location, crop, block) %>%
-  mutate(forage_initial_c_g = ifelse(days == 0, forage_final_c_g, NA)) %>%
-  fill(forage_initial_c_g, .direction = "down") %>%
-  mutate(forage_pct_c_remain = forage_final_c_g / forage_initial_c_g * 100) %>%
+  mutate(
+    forage_collected_prop_c = forage_pct_c / 100,
+    forage_collected_prop_n = forage_pct_n / 100)
+
+# pull out t0 carbon and nitrogen
+decomp.df %>%
+  group_by(location, crop) %>%
+  summarize(forage_t0_prop_n = mean(forage_collected_prop_n, na.rm = TRUE)) %>%
   ungroup()
 
-# for nitrogen
+# calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
-  group_by(location, crop, block) %>%
-  mutate(forage_initial_n_g = ifelse(days == 0, forage_final_n_g, NA)) %>%
-  fill(forage_initial_n_g, .direction = "down") %>%
-  mutate(forage_pct_n_remain = forage_final_n_g / forage_initial_n_g * 100) %>%
-  ungroup()
+  mutate(forage_t0_c_g = case_when(
+    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.398,
+    crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.418,
+    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.421,
+    crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g * 0.426,
+    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.401,
+    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.381,
+    crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.404,
+    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.382,
+    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g * 0.395,
+    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.401
+  ))
+
+# calculate grams of n in t0 samples
+decomp.df <- decomp.df %>%
+  mutate(forage_t0_n_g = case_when(
+    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.0270,
+    crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.0218,
+    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0240,
+    crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g *0.0419,
+    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0284,
+    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.0270,
+    crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.0206,
+    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0250,
+    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g *0.0344,
+    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0267
+  ))
+
+# calculate grams of c and n in when collected
+decomp.df <- decomp.df %>%
+  mutate(forage_collected_c_g = forage_final_drywt_g * forage_collected_prop_c,
+         forage_collected_n_g = forage_final_drywt_g * forage_collected_prop_n)
+
+# determine percent remaining
+decomp.df <- decomp.df %>%
+  mutate(forage_pct_c_remain = forage_collected_c_g / forage_t0_c_g * 100,
+         forage_pct_n_remain = forage_collected_n_g / forage_t0_n_g * 100)
 
 # tea bags ----
+
+# tea bag percent remaining
 decomp.df <- decomp.df %>%
   mutate(
     tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g,
-    tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100) %>%
-  # calculate proportion of nutrient remaining
-  mutate(
-    tea_prop_c = tea_pct_c / 100, 
-    tea_prop_n = tea_pct_n / 100) %>%
-  # calculate final weight of nutrient
-  mutate(
-    tea_final_c_g = tea_prop_c * tea_final_drywt_g,
-    tea_final_n_g = tea_prop_n * tea_final_drywt_g)
+    tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100, na.rm = TRUE)
 
-# calculate the initial c for earch group of location, crop, block, using sample time 0 for that group
-# for carbon
+# proportion of nutrient remaining 
 decomp.df <- decomp.df %>%
-  group_by(location, crop, block) %>%
-  mutate(tea_initial_c_g = ifelse(days == 0, tea_final_c_g, NA)) %>%
-  fill(tea_initial_c_g, .direction = "down") %>%
-  mutate(tea_pct_c_remain = tea_final_c_g / tea_initial_c_g * 100) %>%
+  mutate(
+    tea_collected_prop_c = tea_pct_c / 100,
+    tea_collected_prop_n = tea_pct_n / 100)
+
+# pull out t0 carbon and nitrogen
+decomp.df %>%
+  group_by(location, crop) %>%
+  summarize(tea_t0_prop_c = mean(tea_collected_prop_c, na.rm = TRUE)) %>%
   ungroup()
 
-# for nitrogen
+# calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
-  group_by(location, crop, block) %>%
-  mutate(tea_initial_n_g = ifelse(days == 0, tea_final_n_g, NA)) %>%
-  fill(tea_initial_n_g, .direction = "down") %>%
-  mutate(tea_pct_n_remain = tea_final_n_g / tea_initial_n_g * 100) %>%
-  ungroup()
+  mutate(tea_t0_c_g = case_when(
+    crop == "AR" & location == "ISU" ~ tea_initial_drywt_g * 0.437,
+    crop == "CR" & location == "ISU" ~ tea_initial_drywt_g * 0.454,
+    crop == "GPC" & location == "ISU" ~ tea_initial_drywt_g * 0.447,
+    crop == "PCRO" & location == "ISU" ~ tea_initial_drywt_g *0.422,
+    crop == "WPC" & location == "ISU" ~ tea_initial_drywt_g * 0.392,
+    crop == "AR" & location == "WIU" ~ tea_initial_drywt_g * 0.382,
+    crop == "CR" & location == "WIU" ~ tea_initial_drywt_g * 0.437,
+    crop == "GPC" & location == "WIU" ~ tea_initial_drywt_g * 0.394,
+    crop == "PCRO" & location == "WIU" ~ tea_initial_drywt_g *0.407,
+    crop == "WPC" & location == "WIU" ~ tea_initial_drywt_g * 0.376
+  ))
+
+# calculate grams of n in t0 samples
+decomp.df <- decomp.df %>%
+  mutate(tea_t0_n_g = case_when(
+    crop == "AR" & location == "ISU" ~ tea_initial_drywt_g * 0.0413,
+    crop == "CR" & location == "ISU" ~ tea_initial_drywt_g * 0.0416,
+    crop == "GPC" & location == "ISU" ~ tea_initial_drywt_g * 0.0404,
+    crop == "PCRO" & location == "ISU" ~ tea_initial_drywt_g *0.0395,
+    crop == "WPC" & location == "ISU" ~ tea_initial_drywt_g * 0.0366,
+    crop == "AR" & location == "WIU" ~ tea_initial_drywt_g *0.0342,
+    crop == "CR" & location == "WIU" ~ tea_initial_drywt_g * 0.0395,
+    crop == "GPC" & location == "WIU" ~ tea_initial_drywt_g * 0.0360,
+    crop == "PCRO" & location == "WIU" ~ tea_initial_drywt_g *0.0366,
+    crop == "WPC" & location == "WIU" ~ tea_initial_drywt_g * 0.0339
+  ))
+
+# calculate grams of c and n in when collected
+decomp.df <- decomp.df %>%
+  mutate(tea_collected_c_g = tea_final_drywt_g * tea_collected_prop_c,
+         tea_collected_n_g = tea_final_drywt_g * tea_collected_prop_n)
+
+# determine percent remaining
+decomp.df <- decomp.df %>%
+  mutate(tea_pct_c_remain = tea_collected_c_g / tea_t0_c_g * 100,
+         tea_pct_n_remain = tea_collected_n_g / tea_t0_n_g * 100)
 
 # REMOVE COLUMNS WE WILL NOT USE IN THE FUTURE ----
 decomp.df <- decomp.df %>%
-  select(forage_id, tea_id, location, crop, block, days, forage_pct_remain, forage_pct_c_remain,
+  select(location, crop, block, days, forage_pct_remain, forage_pct_c_remain,
          forage_pct_n_remain,
          tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain)
+
+# PIVOT LONGER ----
+decomp_long.df <- decomp.df %>%
+  pivot_longer(cols = c(forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain, 
+                        tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain),
+               names_to = "variable",
+               values_to = "value")
+
+decomp_long.df %>%
+  ggplot(aes(days, value, color = crop)) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun = mean, geom = "line") +
+  facet_grid(variable~location) +
+  coord_cartesian(ylim = c(50,100))
 
 # SAVE THE OUTPUT TO A CSV ----
 write_csv(decomp.df, file = "output/pct remaining data.csv")
@@ -93,8 +159,7 @@ write_csv(decomp.df, file = "output/pct remaining data.csv")
 
 # bill to look at 
 decomp.df %>%
-  filter(forage_pct_remain < 100) %>%
-  ggplot(aes(days, forage_pct_remain, color = crop, group = days)) +
+  ggplot(aes(days, tea_pct_n_remain, color = crop, group = days, shape = as.factor(block))) +
   geom_boxplot() +
   # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
