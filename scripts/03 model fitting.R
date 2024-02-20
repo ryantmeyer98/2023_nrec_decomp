@@ -10,32 +10,32 @@ full.df <- read_csv("output/pct remaining data.csv")
 
 # forage biomass
 f.df <- full.df %>%
-  select(days, forage_pct_remain) %>%
+  select(location, crop, block, days, forage_pct_remain) %>%
   na.omit()
 
 # forage n
 f_n.df <- full.df %>%
-  select(days, forage_pct_n_remain) %>%
+  select(location, crop, block, days, forage_pct_n_remain) %>%
   na.omit()
 
 # forage c
 f_c.df <- full.df %>%
-  select(days, forage_pct_c_remain) %>%
+  select(location, crop, block, days, forage_pct_c_remain) %>%
   na.omit()
 
 # tea biomass
 t.df <- full.df %>%
-  select(days, tea_pct_remain) %>%
+  select(location, crop, block, days, tea_pct_remain) %>%
   na.omit()
 
 # tea n
 t_n.df <- full.df %>%
-  select(days, tea_pct_n_remain) %>%
+  select(location, crop, block, days, tea_pct_n_remain) %>%
   na.omit()
 
 # tea c 
 t_c.df <-full.df %>%
-  select(days, tea_pct_c_remain) %>%
+  select(location, crop, block, days, tea_pct_c_remain) %>%
   na.omit()
 
 # FIT THE MODELS ----
@@ -88,10 +88,10 @@ t_c.df <- t_c.df %>%
 
 # forage
 a <- f.df %>%
-  ggplot(aes(days, forage_pct_remain)) +
+  ggplot(aes(days, forage_pct_remain, group = crop)) +
   geom_point() +
-  stat_summary(fun = mean, geom = "point", color = "orange") +
-  geom_line(aes(y = f_fit), color = "red") 
+  stat_summary(fun = mean, geom = "point") +
+  geom_line(aes(y = f_fit, group = crop)) 
 
 a
 
@@ -143,57 +143,33 @@ f
 # put plots together
 a + b + c + d + e + f
 
+# EXTRACT K VALUES ----
 
-# TESTING MODEL FITS ----
-
-# create a dataframe for the tea data 
-tea_n.df <- full.df %>%
-  select(days, tea_pct_n_remain) %>%
-  na.omit()
-
-
-# what if we try with SSasymp
-fit <- nls(tea_pct_n_remain ~ SSasymp(days, Asym, R0, lrc), data = tea_n.df)
+# are the k - values just the estimate?
+f.df %>%
+  ggplot() +
+  geom_point(aes(days, forage_pct_remain, color = crop, group = crop)) +
+  geom_point(aes(days, f_fit, color = crop, group = crop))
 
 
-# save the predicted values 
-tea_n.df <- tea_n.df %>%
-  mutate(y_predicted = predict(fit))
+# K-values for crop, block, location
 
-# plotting 
-tea_n.df %>%
-  ggplot(aes(days, tea_pct_n_remain)) +
-  geom_point() +
-  geom_line(aes(y = y_predicted), color = "red") +
-  stat_summary(fun = mean, geom = "point", color = "orange")
-
-
-
-
-
-
-
-
-
-
-  
-# i want to try automating this here
-long.df <- full.df %>%
-  pivot_longer(
-    cols = c(forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain,
-             tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain),
-    names_to = "name",
-    values_to = "result"
-  ) %>%
-  na.omit()
-
-
-
-fitted.df <- long.df %>%
-  nest(data = -name) %>%
+# TESTING THINGS WITH BILL ----
+forage.df <- full.df %>%
+  select(location, crop, block, days, forage_pct_remain) %>%
+  na.omit() %>%
+  nest(data = -c(crop, block, location)) %>%
   mutate(
-    fit = map(data, ~nls(result ~ SSasymp(days, Asym, R0, lrc), data = .x)),
+    fit = map(data, ~nls(forage_pct_remain ~ SSasymp(days, Asym, R0, lrc), data = .)),
     tidied = map(fit, tidy),
-    augmented = map(fit, augment, data = .)
-  )
+    augmented = map(fit, augment))
+
+
+nls(forage_pct_remain ~ SSasymp(days, Asym, R0, lrc), data = f.df)
+
+
+
+
+
+
 
