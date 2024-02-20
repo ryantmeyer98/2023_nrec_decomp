@@ -181,28 +181,25 @@ k_nonlin_nitrogen_summary.df <- k_nonlin_nitrogen.df %>%
 
 
 full.df %>%
-  ggplot(aes(days, forage_pct_remain)) +
-  geom_point() +
+  ggplot(aes(days, forage_pct_remain, group = crop, color = crop)) +
+  stat_summary(fun = mean, geom = "point") +
   geom_smooth(method = "nls", 
               formula = y ~ yf + (y0 - yf) * exp(-k * x),
               method.args = list(start = c(y0 = 100, yf = 80, k = 0.1)),
               se = FALSE)
 
+full.df %>%
+  ggplot(aes(days, forage_pct_remain, group = crop, color = crop)) +
+  stat_summary(fun = mean, geom = "point") +
+  geom_smooth(method = "nls", formula = y ~ 100 * exp(-k*x), 
+              method.args = list(start = c(k=0.001)), se = FALSE)
 
 
-geom_smooth( aes(x = days, y = pct_mass_remain, color=spp),
-             method = "nls", formula = y ~ 100 * exp(-k*x), 
-             method.args = list(start = c(k=0.001)), se = FALSE)
-
-
-total_biomass.df %>%
-  # filter(soil_block ==2) %>% 
-  ggplot(mapping = aes(days, pct_mass_remain, color = spp)) +
-  # stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-  # stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "line") +
-  geom_point(position = position_dodge2(width=5))+
-  theme_classic() +
-  geom_smooth( aes(x = days, y = pct_mass_remain, color=spp),
-               method = "nls", formula = y ~ 100 * exp(-k*x), 
-               method.args = list(start = c(k=0.001)), se = FALSE)
+full.df %>%
+  ggplot(aes(days, forage_pct_n_remain, group = crop, color = crop)) +
+  stat_summary(fun = mean, geom = "point") +
+  geom_smooth(method = "nls", 
+              formula = y ~ yf + (y0 - yf) * exp(-k * x),
+              method.args = list(start = c(y0 = 100, yf = 80, k = 0.1)),
+              se = FALSE)
 
