@@ -6,37 +6,43 @@ library(patchwork)
 # READ IN THE DATA ----
 full.df <- read_csv("output/pct remaining data.csv")
 
+# REMOVE NA VALUES ----
+full.df <- full.df %>%
+  group_by(location, crop, block) %>%
+  mutate(across(c(forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
+                  tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain), 
+                ~ replace_na(., mean(., na.rm = TRUE)))) %>%
+  ungroup()
+
+# row number
+full.df <- full.df %>%
+  mutate(row = row_number())
+
 # CREATE DATA FRAMES FOR EACH VARIABLE ----
 
 # forage biomass
 f.df <- full.df %>%
-  select(location, crop, block, days, forage_pct_remain) %>%
-  na.omit()
+  select(location, crop, block, days, forage_pct_remain)
 
 # forage n
 f_n.df <- full.df %>%
-  select(location, crop, block, days, forage_pct_n_remain) %>%
-  na.omit()
+  select(location, crop, block, days, forage_pct_n_remain)
 
 # forage c
 f_c.df <- full.df %>%
-  select(location, crop, block, days, forage_pct_c_remain) %>%
-  na.omit()
+  select(location, crop, block, days, forage_pct_c_remain)
 
 # tea biomass
 t.df <- full.df %>%
-  select(location, crop, block, days, tea_pct_remain) %>%
-  na.omit()
+  select(location, crop, block, days, tea_pct_remain)
 
 # tea n
 t_n.df <- full.df %>%
-  select(location, crop, block, days, tea_pct_n_remain) %>%
-  na.omit()
+  select(location, crop, block, days, tea_pct_n_remain)
 
 # tea c 
 t_c.df <-full.df %>%
-  select(location, crop, block, days, tea_pct_c_remain) %>%
-  na.omit()
+  select(location, crop, block, days, tea_pct_c_remain)
 
 # FIT THE MODELS ----
 
@@ -145,50 +151,58 @@ a + b + c + d + e + f
 
 # EXTRACT K VALUES ----
 
-# are the k - values just the estimate?
-f.df %>%
-  ggplot() +
-  geom_point(aes(days, forage_pct_remain, color = crop, group = crop)) +
-  geom_point(aes(days, f_fit, color = crop, group = crop))
-
-
-# K-values for crop, block, location
-
 # TESTING THINGS WITH BILL ----
 
-# fix na? 
-full.df <- full.df %>%
-  group_by(location, crop, block) %>%
-  mutate(across(c(forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
-                  tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain), 
-                ~ replace_na(., mean(., na.rm = TRUE)))) %>%
-  ungroup()
-
-# what if it is a completely missing sample?
-
-# estimate k values 
-forage.df <- full.df %>%
+# trying the automation
+forage <- full.df %>%
+  filter(crop == "AR") %>%
   select(location, crop, block, days, forage_pct_remain) %>%
-  na.omit() %>%
   nest(data = -c(crop, block, location)) %>%
-  mutate(
-    fit = map(data, ~nls(forage_pct_remain ~ SSasymp(days, Asym, R0, lrc), data = .)),
-    tidied = map(fit, tidy),
-    augmented = map(fit, augment))
+  mutate(fit = map(data, ~ nls(forage_pct_remain ~ yf + (y0 - yf) * exp(-k * days),
+                               start = list(y0 = 100, yf = 80, k = 0.1),
+                               data = .)))
 
 
-nls(forage_pct_remain ~ SSasymp(days, Asym, R0, lrc), data = f.df)
+# extracting parameters
+forage_sum <- forage %>%
+  mutate(tidied = map(fit, tidy)) %>%
+  unnest(tidied)
+
+# arrange
+forage_sum <- forage_sum %>%
+  arrange(block, crop)
+
+
+# pull out fitted values for analysis
+k_nonlin_nitrogen_summary.df <- k_nonlin_nitrogen.df %>% 
+  mutate(tidied = map(fit, tidy)) %>% 
+  unnest(tidied)
 
 
 
-# checking NA values
-na.df <- full.df %>%
-  filter(days == 0)
+full.df %>%
+  ggplot(aes(days, forage_pct_remain)) +
+  geom_point() +
+  geom_smooth(method = "nls", 
+              formula = y ~ yf + (y0 - yf) * exp(-k * x),
+              method.args = list(start = c(y0 = 100, yf = 80, k = 0.1)),
+              se = FALSE)
 
-mean.df <- full.df %>%
-  filter(days == 0) %>%
-  filter(crop == "PCRO")
-  group_by(location, crop, block) %>%
-  summarize(mean = mean(tea_pct_remain, na.rm = TRUE))
 
+
+geom_smooth( aes(x = days, y = pct_mass_remain, color=spp),
+             method = "nls", formula = y ~ 100 * exp(-k*x), 
+             method.args = list(start = c(k=0.001)), se = FALSE)
+
+
+total_biomass.df %>%
+  # filter(soil_block ==2) %>% 
+  ggplot(mapping = aes(days, pct_mass_remain, color = spp)) +
+  # stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  # stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "line") +
+  geom_point(position = position_dodge2(width=5))+
+  theme_classic() +
+  geom_smooth( aes(x = days, y = pct_mass_remain, color=spp),
+               method = "nls", formula = y ~ 100 * exp(-k*x), 
+               method.args = list(start = c(k=0.001)), se = FALSE)
 
