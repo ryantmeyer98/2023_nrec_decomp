@@ -147,8 +147,10 @@ decomp_long.df <- decomp.df %>%
 
 decomp_long.df %>%
   ggplot(aes(days, value, color = crop)) +
-  stat_summary(fun = mean, geom = "point") +
-  stat_summary(fun = mean, geom = "line") +
+  # stat_smooth(method = "glm", formula = y ~ exp(-x), se = FALSE) +
+  #stat_smooth(se = FALSE) +
+  stat_summary(fun = mean, geom = "point", size = 3, alpha = 0.5) +
+  # stat_summary(fun = mean, geom = "line") +
   facet_grid(variable~location) +
   coord_cartesian(ylim = c(50,100))
 
@@ -159,10 +161,10 @@ write_csv(decomp.df, file = "output/pct remaining data.csv")
 
 # bill to look at 
 decomp.df %>%
-  ggplot(aes(days, tea_pct_n_remain, color = crop, group = days, shape = as.factor(block))) +
+  ggplot(aes(days, tea_pct_n_remain, color = crop, group = days)) +
   geom_boxplot() +
-  # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
-  # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
   geom_point() +
   facet_grid(location~crop)
 
