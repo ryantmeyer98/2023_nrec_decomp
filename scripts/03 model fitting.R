@@ -155,6 +155,18 @@ f.df %>%
 # K-values for crop, block, location
 
 # TESTING THINGS WITH BILL ----
+
+# fix na? 
+full.df <- full.df %>%
+  group_by(location, crop, block) %>%
+  mutate(across(c(forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
+                  tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain), 
+                ~ replace_na(., mean(., na.rm = TRUE)))) %>%
+  ungroup()
+
+# what if it is a completely missing sample?
+
+# estimate k values 
 forage.df <- full.df %>%
   select(location, crop, block, days, forage_pct_remain) %>%
   na.omit() %>%
@@ -169,7 +181,14 @@ nls(forage_pct_remain ~ SSasymp(days, Asym, R0, lrc), data = f.df)
 
 
 
+# checking NA values
+na.df <- full.df %>%
+  filter(days == 0)
 
-
+mean.df <- full.df %>%
+  filter(days == 0) %>%
+  filter(crop == "PCRO")
+  group_by(location, crop, block) %>%
+  summarize(mean = mean(tea_pct_remain, na.rm = TRUE))
 
 
