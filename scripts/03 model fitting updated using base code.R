@@ -68,3 +68,18 @@ biomass.plot <- k_summary.df %>%
 
 biomass.plot
 
+# Now to see the regressions plots
+# plot the negative exponential ----
+decomp.df %>%
+  filter(location == "ISU") %>%
+  filter(crop %in% c("AR")) %>%
+  ggplot(mapping = aes(x=days, y=forage_pct_remain, color=as.factor(block))) +
+  # stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  # stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "line") +
+  geom_point() +
+  theme_classic() +
+  scale_x_continuous(breaks = seq(0, 45, 5)) +
+  geom_smooth( aes(x = days, y = forage_pct_remain, as.factor(block)),
+               method = "nls", formula = y ~ 100 * exp(-k*x),
+               method.args = list(start = c(k=0.001)), se = FALSE)
+
