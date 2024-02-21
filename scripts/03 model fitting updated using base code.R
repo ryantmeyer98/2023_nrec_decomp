@@ -15,8 +15,7 @@ decomp.df <- read_csv("output/pct remaining data.csv") %>%
 #                 ~ replace_na(., mean(., na.rm = TRUE)))) %>%
 #   ungroup()
 
-# interpolate data from the prior value to the next value to fill missing na values using 
-# the na.approx function from the zoo package
+# interpolate data from the prior value to the next value to fill missing na values using the na.approx function from the zoo package
 decomp.df <- decomp.df %>%
   group_by(location, crop, block) %>%
   mutate(across(c(forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
@@ -28,11 +27,9 @@ decomp.df <- decomp.df %>%
 # FIT THE MODELS ----
 
 # forage
-# do a negative exponential regression using SSasymp funciton to get all parameters of the mode for 
-# the f.df dataframe
+# do a negative exponential regression using SSasymp funciton to get all parameters of the mode for the f.df dataframe
 # Asym is the asymptote, R0 is the y-intercept, and lrc is the rate of change
-# the SSasymp function is a self-starting model that uses the asymptote, y-intercept, and rate of 
-# change to fit the model
+# the SSasymp function is a self-starting model that uses the asymptote, y-intercept, and rate of change to fit the model
 
 
 # need to nest the data by location, crop, and block to fit the model to each group
@@ -57,6 +54,7 @@ summary_stats.df <- summary_stats.df %>%
 k_summary.df <- summary_stats.df %>% 
   select (crop, block, location, term, estimate, std.error, statistic, p.value) 
 
+write_csv(k_summary.df, "output/k_summary.csv")
 
 # PLOTTING ----
 # plot the values ----
