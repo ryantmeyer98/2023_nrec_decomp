@@ -7,7 +7,8 @@ decomp.df <- read_csv("output/cleaned raw data.csv")
 # GET COLUMNS ALL SET UP TO BE THE RIGHT KIND OF THING ----
 decomp.df <- decomp.df %>%
   mutate(location = as.factor(location),
-         crop = as.factor(crop)
+         crop = as.factor(crop),
+         block = as.factor(block)
         # FIX THIS IN THE EXCEL FILE!!!!  tea_initial_drywt_g = as.numeric(tea_initial_drywt_g)
          ) %>% 
   select(
@@ -35,6 +36,11 @@ decomp.df <- decomp.df %>%
 # pull out t0 carbon and nitrogen
 decomp.df %>%
   group_by(location, crop) %>%
+  summarize(forage_t0_prop_c = mean(forage_collected_prop_c, na.rm = TRUE)) %>%
+  ungroup()
+
+decomp.df %>%
+  group_by(location, crop) %>%
   summarize(forage_t0_prop_n = mean(forage_collected_prop_n, na.rm = TRUE)) %>%
   ungroup()
 
@@ -48,16 +54,16 @@ decomp.df %>%
 # calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
   mutate(forage_t0_c_g = case_when(
-    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.398,
+    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.396,
     crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.418,
     crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.421,
     crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g * 0.426,
-    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.401,
+    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.388,
     crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.381,
     crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.404,
     crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.382,
     crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g * 0.395,
-    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.401
+    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.399
   ))
 
 # calculate grams of n in t0 samples
@@ -65,17 +71,17 @@ decomp.df <- decomp.df %>%
   mutate(forage_t0_n_g = case_when(
     crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.0270,
     crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.0218,
-    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0240,
+    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0239,
     crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g *0.0419,
     crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0284,
-    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.0270,
+    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.0269,
     crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.0206,
-    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0250,
-    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g *0.0344,
+    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0249,
+    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g *0.0345,
     crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0267
   ))
 
-# calculate grams of c and n in when collected
+# calculate grams of c and n when collected
 decomp.df <- decomp.df %>%
   mutate(forage_collected_c_g = forage_final_drywt_g * forage_collected_prop_c,
          forage_collected_n_g = forage_final_drywt_g * forage_collected_prop_n)
@@ -147,78 +153,80 @@ decomp.df <- decomp.df %>%
 
 # REMOVE COLUMNS WE WILL NOT USE IN THE FUTURE ----
 decomp.df <- decomp.df %>%
-  select(location, crop, block, days, forage_pct_remain, forage_pct_c_remain,
-         forage_pct_n_remain,
+  select(location, crop, block, days, 
+         forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_pct_c, forage_t0_c_g, forage_t0_n_g, forage_collected_c_g, forage_collected_n_g,
+         forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain,
+         tea_initial_drywt_g, tea_final_drywt_g, tea_pct_n, tea_pct_c, tea_t0_c_g, tea_t0_n_g, tea_collected_c_g, tea_collected_n_g,
          tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain)
 
-# PIVOT LONGER ----
-decomp_long.df <- decomp.df %>%
-  pivot_longer(cols = c(forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain, 
-                        tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain),
-               names_to = "variable",
-               values_to = "value")
-
-decomp_long.df %>%
-  ggplot(aes(days, value, color = crop)) +
-  # stat_smooth(method = "glm", formula = y ~ exp(-x), se = FALSE) +
-  #stat_smooth(se = FALSE) +
-  stat_summary(fun = mean, geom = "point", size = 3, alpha = 0.5) +
-  # stat_summary(fun = mean, geom = "line") +
-  facet_grid(variable~location) +
-  coord_cartesian(ylim = c(50,100))
+# # PIVOT LONGER ----
+# decomp_long.df <- decomp.df %>%
+#   pivot_longer(cols = c(forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain, 
+#                         tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain),
+#                names_to = "variable",
+#                values_to = "value")
+# 
+# decomp_long.df %>%
+#   ggplot(aes(days, value, color = crop)) +
+#   # stat_smooth(method = "glm", formula = y ~ exp(-x), se = FALSE) +
+#   #stat_smooth(se = FALSE) +
+#   stat_summary(fun = mean, geom = "point", size = 3, alpha = 0.5) +
+#   # stat_summary(fun = mean, geom = "line") +
+#   facet_grid(variable~location) +
+#   coord_cartesian(ylim = c(50,100))
 
 # SAVE THE OUTPUT TO A CSV ----
 write_csv(decomp.df, file = "output/pct remaining data.csv")
 
 # SOME EARLY PLOTTING ----
 
-# bill to look at 
-decomp.df %>%
-  ggplot(aes(days, tea_pct_n_remain, color = crop, group = days)) +
-  geom_boxplot() +
-  stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  geom_point() +
-  facet_grid(location~crop)
-
-# LOOKING FOR OUTLIERS ----
-outlier.df <- decomp.df %>%
-  filter(location == "WIU") %>%
-  filter(crop == "PCRO") 
-
-test.df <- decomp.df %>%
-  filter(location == "ISU") %>%
-  filter(crop == "GPC") %>%
-  filter(block == "1") %>%
-  select(location, crop, block, days,
-         forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_prop_n, forage_initial_n_g,
-         forage_final_n_g, forage_pct_n_remain)
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-### ADDED CODE # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# this code will help to look for outliers
-library(plotly)
-
-# note you cant see anything with this data as all the values are gone
-# going to move to a new code script to look at the data
-
-# make block a factor
-decomp.df <- decomp.df %>%
-  mutate(block = as.factor(block))
-
-
-outliers.plot <- decomp.df %>% 
-  filter(location == "ISU", crop == "AR") %>% 
-  ggplot(aes(days, tea_pct_n_remain, color = block)) +
-  geom_point()
-
-
-  
-ggplotly(outliers.plot)  
-
-
-
+# # bill to look at 
+# decomp.df %>%
+#   ggplot(aes(days, tea_pct_n_remain, color = crop, group = days)) +
+#   geom_boxplot() +
+#   stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+#   stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+#   geom_point() +
+#   facet_grid(location~crop)
+# 
+# # LOOKING FOR OUTLIERS ----
+# outlier.df <- decomp.df %>%
+#   filter(location == "WIU") %>%
+#   filter(crop == "PCRO") 
+# 
+# test.df <- decomp.df %>%
+#   filter(location == "ISU") %>%
+#   filter(crop == "GPC") %>%
+#   filter(block == "1") %>%
+#   select(location, crop, block, days,
+#          forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_prop_n, forage_initial_n_g,
+#          forage_final_n_g, forage_pct_n_remain)
+# 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# ### ADDED CODE # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # this code will help to look for outliers
+# library(plotly)
+# 
+# # note you cant see anything with this data as all the values are gone
+# # going to move to a new code script to look at the data
+# 
+# # make block a factor
+# decomp.df <- decomp.df %>%
+#   mutate(block = as.factor(block))
+# 
+# 
+# outliers.plot <- decomp.df %>% 
+#   filter(location == "ISU", crop == "AR") %>% 
+#   ggplot(aes(days, tea_pct_n_remain, color = block)) +
+#   geom_point()
+# 
+# 
+#   
+# ggplotly(outliers.plot)  
+# 
+# 
+# 
 
 

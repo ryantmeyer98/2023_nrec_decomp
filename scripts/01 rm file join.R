@@ -7,6 +7,12 @@ library(readxl)
 # forage bags
 forage.df <- read_excel("data/23 nrec decomp biomass.xlsx")
 
+# get the numnber of samples per location, crop, and block
+forage.df %>%
+  group_by(crop, block) %>%
+  summarize(n = n())
+
+
 # tea bags
 tea.df <- read_excel("data/tea wt.xlsx") %>%
   rename(tea_initial_drywt_g = initial_dry_wt_g)
@@ -37,18 +43,19 @@ cn.df %>%
 
 # there are a few extra columns in the tea datasheet to remove, doing that here, also clean names up
 tea.df <- tea.df %>%
-  select(tea_id, tea_initial_drywt_g) 
+  select(tea_id, tea_initial_drywt_g)
 
 # cleaning forage dataset ----
 
 # need to make forage_id and tea_id numeric as well
 forage.df <- forage.df %>%
-  mutate(forage_id = as.numeric(forage_id)) %>%
-  mutate(tea_id = as.numeric(tea_id))
+  # mutate(forage_id = as.numeric(forage_id)) %>% # should NEVER NEED THIS!!!!
+  mutate(tea_id = as.numeric(tea_id))  # WHY ARE THERE 255A abnd the other A and you lose them
 
-# remove places where samples were lost
-forage.df <- forage.df %>%
-  filter(!is.na(sample_time))
+# THERE ARE NO MISSING VALUES HERE NOW!!!
+# # remove places where samples were lost
+# forage.df <- forage.df %>%
+#   filter(!is.na(sample_time))
 
 # cleaning carbon and nitrogen dataset ----
 # we then need to split by tea and forage data and remove the F and T
@@ -57,7 +64,7 @@ tea_cn.df <- cn.df %>%
   rename(tea_id = id,
          tea_pct_n = pct_n,
          tea_pct_c = pct_c) %>%
-  mutate(tea_id = substr(tea_id, 2, nchar(tea_id))) %>%
+  mutate(tea_id = substr(tea_id, 2, nchar(tea_id))) %>% # AGAIN I CORRECTED THIS - WOULD NEVER DO BASED ON POSITION!!!!
   mutate(tea_id = as.numeric(tea_id))
 
 # for forage bags
@@ -66,7 +73,7 @@ forage_cn.df <- cn.df %>%
   rename(forage_id = id,
          forage_pct_n = pct_n,
          forage_pct_c = pct_c) %>%
-  mutate(forage_id = substr(forage_id, 2, nchar(forage_id))) %>%
+  mutate(forage_id = substr(forage_id, 2, nchar(forage_id))) %>% # AGAIN I CORRECTED THIS - WOULD NEVER DO BASED ON POSITION!!!!
   mutate(forage_id = as.numeric(forage_id))
 
 # JOIN THE DATA ----
@@ -74,15 +81,23 @@ forage_cn.df <- cn.df %>%
 # join the tea initials to the tea finals
 full.df <- full_join(forage.df, tea.df, by = "tea_id")
 
+# get the numnber of samples per location, crop, and block
+full.df %>%
+  group_by(crop, block) %>%
+  summarize(n = n())
+
+
 # join the pct data to the forage bags
 full.df <- full_join(full.df, forage_cn.df, by = "forage_id")
 
-# foin the pct data to the tea bags
+# join the pct data to the tea bags
 full.df <- full_join(full.df, tea_cn.df, by = "tea_id")
 
-# remove data with no sample time as this indicates that the samples were lost
-full.df <- full.df %>%
-  filter(!is.na(sample_time))
+write_csv(full.df, "output/joined data.csv")
+
+# # remove data with no sample time as this indicates that the samples were lost
+# full.df <- full.df %>%
+#   filter(!is.na(sample_time))
 
 # REMOVE THE WEIGHTS OF THE BAGS AND THE STAPLES ----
 
