@@ -63,7 +63,8 @@ biomass.plot <- k_summary.df %>%
   stat_summary(fun.data = mean_se, na.rm = TRUE, 
                geom = "errorbar", width=.2) +
   labs(x="Species", y="Biomass Decay coefficient (k)") +
-  theme_classic()
+  theme_classic() +
+  facet_grid(.~location)
 
 biomass.plot
 
