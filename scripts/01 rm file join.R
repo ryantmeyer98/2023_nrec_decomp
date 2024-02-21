@@ -37,8 +37,7 @@ cn.df %>%
 
 # there are a few extra columns in the tea datasheet to remove, doing that here, also clean names up
 tea.df <- tea.df %>%
-  select(tea_id, tea_initial_drywt_g) %>%
-  mutate(tea_id = as.numeric(tea_id))
+  select(tea_id, tea_initial_drywt_g) 
 
 # cleaning forage dataset ----
 

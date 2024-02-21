@@ -2,29 +2,35 @@
 library(tidyverse)
 
 # READ IN THE DATA ----
-decomp.df <- read_csv("output/cleaned raw data.csv")
+decomp.df <- read_csv("output/cleaned raw data.csv") 
 
 # GET COLUMNS ALL SET UP TO BE THE RIGHT KIND OF THING ----
 decomp.df <- decomp.df %>%
   mutate(location = as.factor(location),
-         crop = as.factor(crop),
-         tea_initial_drywt_g = as.numeric(tea_initial_drywt_g))
+         crop = as.factor(crop)
+        # FIX THIS IN THE EXCEL FILE!!!!  tea_initial_drywt_g = as.numeric(tea_initial_drywt_g)
+         ) %>% 
+  select(
+         tea_initial_drywt_g, tea_final_drywt_g, tea_pct_c, tea_pct_n, location, crop, block, days, 
+         forage_initial_drywt_g, forage_final_drywt_g,  forage_pct_c, forage_pct_n) %>%
+  arrange(location, crop,days, block)
 
 # CALCULATE PERCENT MASS REMAINING ----
 
 # forage bags ----
 
-# forage bag percent remaining
+# forage bag percent remaining and round the forage_pct_remain to 2 decimals
 decomp.df <- decomp.df %>%
   mutate(
     forage_mass_loss = forage_initial_drywt_g - forage_final_drywt_g,
-    forage_pct_remain = (forage_final_drywt_g / forage_initial_drywt_g) * 100)
+    forage_pct_remain = round(((forage_final_drywt_g / forage_initial_drywt_g) * 100),3))
+
 
 # proportion of nutrient remaining 
 decomp.df <- decomp.df %>%
   mutate(
-    forage_collected_prop_c = forage_pct_c / 100,
-    forage_collected_prop_n = forage_pct_n / 100)
+    forage_collected_prop_c = round(forage_pct_c / 100, 3),
+    forage_collected_prop_n = round(forage_pct_n / 100, 3))
 
 # pull out t0 carbon and nitrogen
 decomp.df %>%
@@ -32,6 +38,13 @@ decomp.df %>%
   summarize(forage_t0_prop_n = mean(forage_collected_prop_n, na.rm = TRUE)) %>%
   ungroup()
 
+# NOTE YOU SHOULD REALLY SAVE THE ABOVE TO A DF AND DO A JOIN!!!!! DOING THIS BY HAND LEADS TO ISSUES
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# WHERE DID THE NUMBERS IN BLUE COME FROM !!!11 ????
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
   mutate(forage_t0_c_g = case_when(
@@ -181,10 +194,29 @@ test.df <- decomp.df %>%
          forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_prop_n, forage_initial_n_g,
          forage_final_n_g, forage_pct_n_remain)
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+### ADDED CODE # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# this code will help to look for outliers
+library(plotly)
+
+# note you cant see anything with this data as all the values are gone
+# going to move to a new code script to look at the data
+
+# make block a factor
+decomp.df <- decomp.df %>%
+  mutate(block = as.factor(block))
 
 
+outliers.plot <- decomp.df %>% 
+  filter(location == "ISU", crop == "AR") %>% 
+  ggplot(aes(days, tea_pct_n_remain, color = block)) +
+  geom_point()
 
 
+  
+ggplotly(outliers.plot)  
 
 
 
