@@ -1,6 +1,9 @@
 # LIBRARIES
 library(tidyverse)
 library(car)
+library(emmeans)
+library(multcompView)
+library(patchwork)
 
 
 # READ IN THE DATA FOR ANALYSIS ----
@@ -130,6 +133,122 @@ Anova(t_n.lm, type = "3", test.statistic = "F")
 # tea biomass; reject null for interaction, continue with post hoc tests 
 # tea carbon; reject null for crop, continue with post hoc tests
 # tea nitrogenl; reject null for interaction, continue with post hoc tests. 
+
+
+# POST F TESTS ----
+# WILL USE ALL PAIRWISE COMPARISONS WITH sidak P-VALUE ADJUSTMENT
+# not sure how i want to handle the interactions right now
+
+# forage biomass
+# extract estimated marginal means and put them into a dataframe
+f_b.emm <- emmeans(f_b.lm, ~ crop)
+f_b_results.df <- as.data.frame(f_b.emm)
+# run all pairwise comparisons with a tukey p-value adjustment
+f_b.pw <- pairs(emmeans(f_b.lm, ~ crop))
+f_b.pw
+# pull out compact letter display and save as a dataframe
+f_b.cld <- as.data.frame(multcomp::cld(f_b.emm, Letters = letters, adjust = "sidak"))
+
+# forage carbon
+# for crop
+# extract estimated marginal means
+f_c.emm <- emmeans(f_c.lm, ~ crop)
+# get estimates marginal means and letters into a dataframe
+f_c_crop.cld <- as.data.frame(multcomp::cld(f_c.emm, Letters = letters, adjust = "sidak"))
+#for location
+f_c.emm <- emmeans(f_c.lm, ~ location)
+# get estimated marginal means and cld for location
+f_c_location.cld <- as.data.frame(multcomp::cld(f_c.emm, Letters = letters, adjust = "sidak"))
+
+# forage nitrogen
+# extract estimated marginal means
+f_n.emm <- emmeans(f_n.lm, ~ crop)
+# cld
+f_n.cld <- as.data.frame(multcomp::cld(f_n.emm, Letters = letters, adjust = "sidak"))
+
+
+
+
+
+
+
+
+# SOME PRELIMINARY PLOTTING ----
+a <-f_b.cld %>%
+  ggplot(aes(crop, emmean)) +
+  geom_point(aes(color = crop)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.3, color = crop)) +
+  labs(y = "Forage Grams of Biomass Lost per Day") +
+  geom_text(aes(x = 1, y = 0.014, label = "b"), size = 4) +
+  geom_text(aes(x = 2, y = 0.014, label = "b"), size = 4) +
+  geom_text(aes(x = 3, y = 0.014, label = "a"), size = 4) +
+  geom_text(aes(x = 4, y = 0.014, label = "b"), size = 4) +
+  geom_text(aes(x = 5, y = 0.014, label = "a"), size = 4) +
+  theme_light() +
+  theme(text = element_text(size = 17),
+        panel.grid = element_blank()) 
+
+a
+
+b <- f_c_crop.cld %>%
+  ggplot(aes(crop, emmean)) +
+  geom_point(aes(color = crop)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.3, color = crop)) +
+  labs(y = "Forage Grams of Carbon Lost per Day") +
+  geom_text(aes(x = 1, y = 0.02, label = "bc"), size = 4) +
+  geom_text(aes(x = 2, y = 0.02, label = "a"), size = 4) +
+  geom_text(aes(x = 3, y = 0.02, label = "ab"), size = 4) +
+  geom_text(aes(x = 4, y = 0.02, label = "c"), size = 4) +
+  geom_text(aes(x = 5, y = 0.02, label = "ab"), size = 4) +
+  theme_light() +
+  theme(text = element_text(size = 17),
+        panel.grid = element_blank()) 
+
+b
+
+c <- f_c_location.cld %>%
+  ggplot(aes(location, emmean)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.3)) +
+  labs(y = "Forage Grams of Carbon Lost per Day") +
+  geom_text(aes(x = 1, y = 0.016, label = "a"), size = 4) +
+  geom_text(aes(x = 2, y = 0.016, label = "b"), size = 4) +
+  theme_light() +
+  theme(text = element_text(size = 17),
+        panel.grid = element_blank()) 
+
+c
+
+d <- f_n.cld %>%
+  ggplot(aes(crop, emmean)) +
+  geom_point(aes(color = crop)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.3, color = crop)) +
+  labs(y = "Forage Grams of Nitrogen Lost per Day") +
+  geom_text(aes(x = 1, y = 0.025, label = "a"), size = 4) +
+  geom_text(aes(x = 2, y = 0.025, label = "a"), size = 4) +
+  geom_text(aes(x = 3, y = 0.025, label = "a"), size = 4) +
+  geom_text(aes(x = 4, y = 0.025, label = "b"), size = 4) +
+  geom_text(aes(x = 5, y = 0.025, label = "a"), size = 4) +
+  theme_light() +
+  theme(text = element_text(size = 17),
+        panel.grid = element_blank())
+
+d
+
+a + b + c + d + plot_layout(guides = "collect")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
