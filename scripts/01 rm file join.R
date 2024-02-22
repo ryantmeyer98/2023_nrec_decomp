@@ -5,7 +5,7 @@ library(readxl)
 # READ IN THE DATA ----
 
 # forage bags
-forage.df <- read_excel("data/23 nrec decomp biomass.xlsx")
+forage.df <- read_excel("data/23 nrec biomass outliers fixed.xlsx")
 
 # get the numnber of samples per location, crop, and block
 forage.df %>%

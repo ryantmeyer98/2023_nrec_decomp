@@ -36,7 +36,8 @@ decomp.df <- decomp.df %>%
 # pull out t0 carbon and nitrogen
 decomp.df %>%
   group_by(location, crop) %>%
-  summarize(forage_t0_prop_c = mean(forage_collected_prop_c, na.rm = TRUE)) %>%
+  filter(days == "0") %>%
+  summarize(forage_t0_prop_c = max(forage_collected_prop_c, na.rm = TRUE)) %>%
   ungroup()
 
 decomp.df %>%
@@ -54,7 +55,7 @@ decomp.df %>%
 # calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
   mutate(forage_t0_c_g = case_when(
-    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.396,
+    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.435,
     crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.418,
     crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.421,
     crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g * 0.426,
