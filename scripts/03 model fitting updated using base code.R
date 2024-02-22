@@ -80,7 +80,7 @@ forage_carbon_summary.df <- forage_carbon_summary.df %>%
 forage_carbon_k_summary.df <- forage_carbon_summary.df %>% 
   select (crop, block, location, term, estimate, std.error, statistic, p.value) 
 
-write_csv(forage_biomass_k_summary.df, "output/forage carbon k values.csv")
+write_csv(forage_carbon_k_summary.df, "output/forage carbon k values.csv")
 
 # FORAGE NITROGEN ----
 forage_nitrogen_stats.df <- decomp.df %>%
@@ -106,7 +106,7 @@ forage_nitrogen_summary.df <- forage_nitrogen_summary.df %>%
 forage_nitrogen_k_summary.df <- forage_nitrogen_summary.df %>% 
   select (crop, block, location, term, estimate, std.error, statistic, p.value) 
 
-write_csv(forage_biomass_k_summary.df, "output/forage nitrogen k values.csv")
+write_csv(forage_nitrogen_k_summary.df, "output/forage nitrogen k values.csv")
 
 # tea biomass ----
 tea_biomass_stats.df <- decomp.df %>%
