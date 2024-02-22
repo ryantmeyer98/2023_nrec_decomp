@@ -17,7 +17,7 @@ decomp.df <- read_csv("output/pct remaining data.csv") %>%
 
 # now to plot location = ISU, crop = AR of pct_c with color by block
 outliers.plot <- decomp.df %>% 
-  filter(location == "ISU", crop == "AR") %>% 
+  filter(location == "ISU", crop == "GPC") %>% 
   ggplot(aes(days, forage_pct_c_remain, color = block, 
              text = paste0(location, "\n", crop, "\n", block, "\n", 
                            "initial= ", forage_initial_drywt_g , "\n", "final= ", forage_final_drywt_g,  "\n",

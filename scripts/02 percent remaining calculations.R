@@ -4,17 +4,9 @@ library(tidyverse)
 # READ IN THE DATA ----
 decomp.df <- read_csv("output/cleaned raw data.csv") 
 
-# GET COLUMNS ALL SET UP TO BE THE RIGHT KIND OF THING ----
+# remove na values from sample time
 decomp.df <- decomp.df %>%
-  mutate(location = as.factor(location),
-         crop = as.factor(crop),
-         block = as.factor(block)
-        # FIX THIS IN THE EXCEL FILE!!!!  tea_initial_drywt_g = as.numeric(tea_initial_drywt_g)
-         ) %>% 
-  select(
-         tea_initial_drywt_g, tea_final_drywt_g, tea_pct_c, tea_pct_n, location, crop, block, days, 
-         forage_initial_drywt_g, forage_final_drywt_g,  forage_pct_c, forage_pct_n) %>%
-  arrange(location, crop,days, block)
+  filter(!is.na(days))
 
 # CALCULATE PERCENT MASS REMAINING ----
 
@@ -27,59 +19,95 @@ decomp.df <- decomp.df %>%
     forage_pct_remain = round(((forage_final_drywt_g / forage_initial_drywt_g) * 100),3))
 
 
-# proportion of nutrient remaining 
+# tea bag percent remaining
+decomp.df <- decomp.df %>%
+  mutate(
+    tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g,
+    tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100, na.rm = TRUE)
+
+
+# forage proportion of nutrient remaining 
 decomp.df <- decomp.df %>%
   mutate(
     forage_collected_prop_c = round(forage_pct_c / 100, 3),
     forage_collected_prop_n = round(forage_pct_n / 100, 3))
 
-# pull out t0 carbon and nitrogen
-decomp.df %>%
+# tea proportion of nutrient remaining
+decomp.df <- decomp.df %>%
+  mutate(
+    tea_collected_prop_c = round(tea_pct_c / 100, 3),
+    tea_collected_prop_n = round(tea_pct_n / 100, 3))
+
+# DATA CHECK TO MAKE SURE THE VALUES FILL DOWN CORRECTLY ----
+forage_t0_carbon.df <- decomp.df %>%
   group_by(location, crop) %>%
   filter(days == "0") %>%
-  summarize(forage_t0_prop_c = max(forage_collected_prop_c, na.rm = TRUE)) %>%
+  summarize(forage_t0_prop_c = mean(forage_collected_prop_c, na.rm = TRUE)) %>%
   ungroup()
 
-decomp.df %>%
+forage_t0_nitrogen.df <- decomp.df %>%
   group_by(location, crop) %>%
+  filter(days == "0") %>%
   summarize(forage_t0_prop_n = mean(forage_collected_prop_n, na.rm = TRUE)) %>%
   ungroup()
 
-# NOTE YOU SHOULD REALLY SAVE THE ABOVE TO A DF AND DO A JOIN!!!!! DOING THIS BY HAND LEADS TO ISSUES
+tea_t0_carbon.df <- decomp.df %>%
+  group_by(location, crop) %>%
+  filter(days == "0") %>%
+  summarize(tea_t0_prop_c = mean(tea_collected_prop_c, na.rm = TRUE)) %>%
+  ungroup()
 
+tea_t0_nitrogen.df <- decomp.df %>%
+  group_by(location, crop) %>%
+  filter(days == "0") %>%
+  summarize(tea_t0_prop_n = mean(tea_collected_prop_n, na.rm = TRUE)) %>%
+  ungroup()
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# WHERE DID THE NUMBERS IN BLUE COME FROM !!!11 ????
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# trying to get everything saved in a dataframe, kinda working but don't have time to play with it right now,
+# just need to get this done, can play with it after defense
+
+# # save the max value in the dataframe
+
+# decomp.df <- decomp.df %>%
+#   group_by(location, crop) %>%
+#   mutate(forage_t0_prop_c = max(forage_collected_prop_c, na.rm = TRUE)) %>%
+#   fill(forage_t0_prop_c, .direction = "down") %>%
+#   mutate(forage_t0_prop_n = max(forage_collected_prop_n, na.rm = TRUE)) %>%
+#   fill(forage_t0_prop_n, .direction = "down") %>%
+#   mutate(tea_t0_prop_c = max(tea_collected_prop_c, na.rm = TRUE)) %>%
+#   fill(tea_t0_prop_c, .direction = "down") %>%
+#   mutate(tea_t0_prop_n = max(tea_collected_prop_n, na.rm = TRUE)) %>%
+#   fill(tea_t0_prop_n, .direction = "down") %>%
+#   ungroup()
+
 # calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
   mutate(forage_t0_c_g = case_when(
-    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.435,
-    crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.418,
-    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.421,
-    crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g * 0.426,
-    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.388,
-    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.381,
-    crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.404,
-    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.382,
-    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g * 0.395,
-    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.399
+    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.42125,
+    crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.43025,
+    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.44275,
+    crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g * 0.44900,
+    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.43175,
+    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.41750,
+    crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.42000,
+    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.43725,
+    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g * 0.44900,
+    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.43200
   ))
 
 # calculate grams of n in t0 samples
 decomp.df <- decomp.df %>%
   mutate(forage_t0_n_g = case_when(
-    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.0270,
-    crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.0218,
-    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0239,
-    crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g *0.0419,
-    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.0284,
-    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.0269,
-    crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.0206,
-    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0249,
-    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g *0.0345,
-    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.0267
+    crop == "AR" & location == "ISU" ~ forage_initial_drywt_g * 0.02750,
+    crop == "CR" & location == "ISU" ~ forage_initial_drywt_g * 0.02000,
+    crop == "GPC" & location == "ISU" ~ forage_initial_drywt_g * 0.02150,
+    crop == "PCRO" & location == "ISU" ~ forage_initial_drywt_g *0.04225,
+    crop == "WPC" & location == "ISU" ~ forage_initial_drywt_g * 0.02675,
+    crop == "AR" & location == "WIU" ~ forage_initial_drywt_g * 0.02525,
+    crop == "CR" & location == "WIU" ~ forage_initial_drywt_g * 0.01950,
+    crop == "GPC" & location == "WIU" ~ forage_initial_drywt_g * 0.02250,
+    crop == "PCRO" & location == "WIU" ~ forage_initial_drywt_g *0.04300,
+    crop == "WPC" & location == "WIU" ~ forage_initial_drywt_g * 0.02700
   ))
 
 # calculate grams of c and n when collected
@@ -94,52 +122,34 @@ decomp.df <- decomp.df %>%
 
 # tea bags ----
 
-# tea bag percent remaining
-decomp.df <- decomp.df %>%
-  mutate(
-    tea_mass_loss = tea_initial_drywt_g - tea_final_drywt_g,
-    tea_pct_remain = (tea_final_drywt_g / tea_initial_drywt_g) * 100, na.rm = TRUE)
-
-# proportion of nutrient remaining 
-decomp.df <- decomp.df %>%
-  mutate(
-    tea_collected_prop_c = tea_pct_c / 100,
-    tea_collected_prop_n = tea_pct_n / 100)
-
-# pull out t0 carbon and nitrogen
-decomp.df %>%
-  group_by(location, crop) %>%
-  summarize(tea_t0_prop_c = mean(tea_collected_prop_c, na.rm = TRUE)) %>%
-  ungroup()
-
 # calculate grams of c in t0 samples
 decomp.df <- decomp.df %>%
   mutate(tea_t0_c_g = case_when(
-    crop == "AR" & location == "ISU" ~ tea_initial_drywt_g * 0.437,
-    crop == "CR" & location == "ISU" ~ tea_initial_drywt_g * 0.454,
-    crop == "GPC" & location == "ISU" ~ tea_initial_drywt_g * 0.447,
-    crop == "PCRO" & location == "ISU" ~ tea_initial_drywt_g *0.422,
-    crop == "WPC" & location == "ISU" ~ tea_initial_drywt_g * 0.392,
-    crop == "AR" & location == "WIU" ~ tea_initial_drywt_g * 0.382,
-    crop == "CR" & location == "WIU" ~ tea_initial_drywt_g * 0.437,
-    crop == "GPC" & location == "WIU" ~ tea_initial_drywt_g * 0.394,
-    crop == "PCRO" & location == "WIU" ~ tea_initial_drywt_g *0.407,
-    crop == "WPC" & location == "WIU" ~ tea_initial_drywt_g * 0.376
+    crop == "AR" & location == "ISU" ~ tea_initial_drywt_g * 0.48900,
+    crop == "CR" & location == "ISU" ~ tea_initial_drywt_g * 0.48150,
+    crop == "GPC" & location == "ISU" ~ tea_initial_drywt_g * 0.48150,
+    crop == "PCRO" & location == "ISU" ~ tea_initial_drywt_g *0.47300,
+    crop == "WPC" & location == "ISU" ~ tea_initial_drywt_g * 0.48450,
+    crop == "AR" & location == "WIU" ~ tea_initial_drywt_g * 0.49125,
+    crop == "CR" & location == "WIU" ~ tea_initial_drywt_g * 0.45475,
+    crop == "GPC" & location == "WIU" ~ tea_initial_drywt_g * 0.47675,
+    crop == "PCRO" & location == "WIU" ~ tea_initial_drywt_g *0.44600,
+    crop == "WPC" & location == "WIU" ~ tea_initial_drywt_g * 0.45150
   ))
 
 # calculate grams of n in t0 samples
 decomp.df <- decomp.df %>%
   mutate(tea_t0_n_g = case_when(
-    crop == "AR" & location == "ISU" ~ tea_initial_drywt_g * 0.0413,
-    crop == "CR" & location == "ISU" ~ tea_initial_drywt_g * 0.0416,
-    crop == "GPC" & location == "ISU" ~ tea_initial_drywt_g * 0.0404,
-    crop == "PCRO" & location == "ISU" ~ tea_initial_drywt_g *0.0395,
-    crop == "WPC" & location == "ISU" ~ tea_initial_drywt_g * 0.0366,
-    crop == "AR" & location == "WIU" ~ tea_initial_drywt_g *0.0342,
-    crop == "CR" & location == "WIU" ~ tea_initial_drywt_g * 0.0395,
-    crop == "GPC" & location == "WIU" ~ tea_initial_drywt_g * 0.0360,
-    crop == "PCRO" & location == "WIU" ~ tea_initial_drywt_g *0.0366,
-    crop == "WPC" & location == "WIU" ~ tea_initial_drywt_g * 0.0339
+    crop == "AR" & location == "ISU" ~ tea_initial_drywt_g * 0.04275,
+    crop == "CR" & location == "ISU" ~ tea_initial_drywt_g * 0.03725,
+    crop == "GPC" & location == "ISU" ~ tea_initial_drywt_g * 0.04000,
+    crop == "PCRO" & location == "ISU" ~ tea_initial_drywt_g *0.03600,
+    crop == "WPC" & location == "ISU" ~ tea_initial_drywt_g * 0.04175,
+    crop == "AR" & location == "WIU" ~ tea_initial_drywt_g *0.04100,
+    crop == "CR" & location == "WIU" ~ tea_initial_drywt_g * 0.03275,
+    crop == "GPC" & location == "WIU" ~ tea_initial_drywt_g * 0.04225,
+    crop == "PCRO" & location == "WIU" ~ tea_initial_drywt_g *0.03300,
+    crop == "WPC" & location == "WIU" ~ tea_initial_drywt_g * 0.03800
   ))
 
 # calculate grams of c and n in when collected
