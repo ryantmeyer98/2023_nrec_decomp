@@ -163,14 +163,23 @@ decomp.df <- decomp.df %>%
          tea_pct_n_remain = tea_collected_n_g / tea_t0_n_g * 100)
 
 # REMOVE COLUMNS WE WILL NOT USE IN THE FUTURE ----
+
 decomp.df <- decomp.df %>%
-  select(location, crop, block, days, 
-         forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_pct_c, forage_t0_c_g, 
+  select(location, crop, block, days,
+         forage_initial_drywt_g, forage_final_drywt_g, forage_pct_n, forage_pct_c, forage_t0_c_g,
          forage_t0_n_g, forage_collected_c_g, forage_collected_n_g,
          forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain,
-         tea_initial_drywt_g, tea_final_drywt_g, tea_pct_n, tea_pct_c, tea_t0_c_g, tea_t0_n_g, 
+         tea_initial_drywt_g, tea_final_drywt_g, tea_pct_n, tea_pct_c, tea_t0_c_g, tea_t0_n_g,
          tea_collected_c_g, tea_collected_n_g,
          tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain)
+
+
+# SAVE THE OUTPUT TO A CSV ----
+write_csv(decomp.df, file = "output/pct remaining data.csv")
+
+# decomp.df <- decomp.df %>%
+#   select(location, crop, block, days, forage_pct_remain, forage_pct_c_remain, forage_pct_n_remain,
+#          tea_pct_remain, tea_pct_c_remain, tea_pct_n_remain)
 
 # # PIVOT LONGER ----
 # decomp_long.df <- decomp.df %>%
@@ -188,8 +197,6 @@ decomp.df <- decomp.df %>%
 #   facet_grid(variable~location) +
 #   coord_cartesian(ylim = c(50,100))
 
-# SAVE THE OUTPUT TO A CSV ----
-write_csv(decomp.df, file = "output/pct remaining data.csv")
 
 # SOME EARLY PLOTTING ----
 
