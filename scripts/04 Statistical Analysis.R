@@ -187,10 +187,22 @@ t_n.emm <- emmeans(t_n.lm, ~ crop * location)
 # cld
 t_n.cld <- as.data.frame(multcomp::cld(t_n.emm, Letters = letters, adjust = "Sidak"))
 
+# SAVE OUTPUT ----
 
-
-
-
+# forage biomass
+write_csv(f_b.cld, file = "output/stats output/forage biomass.csv")
+# forage carbon crop
+write_csv(f_c_crop.cld, file = "output/stats output/forage carbon crop.csv")
+# forage carbon location
+write_csv(f_c_location.cld, file = "output/stats output/forage carbon location.csv")
+# forage nitrogen
+write_csv(f_n.cld, file = "output/stats output/forage nitrogen.csv")
+# tea biomass
+write_csv(t_b.cld, file = "output/stats output/tea biomass.csv")
+# tea carbon
+write_csv(t_c.cld, file = "output/stats output/tea carbon.csv")
+# tea nitrogen
+write_csv(t_n.cld, file = "output/stats output/tea nitrogen.csv")
 
 # SOME PRELIMINARY PLOTTING ----
 
