@@ -132,7 +132,7 @@ Anova(t_n.lm, type = "3", test.statistic = "F")
 # forage nitrogen; reject null for crop, continue with post hoc tests
 # tea biomass; reject null for interaction, continue with post hoc tests 
 # tea carbon; reject null for crop, continue with post hoc tests
-# tea nitrogenl; reject null for interaction, continue with post hoc tests. 
+# tea nitrogen; reject null for interaction, continue with post hoc tests. 
 
 
 # POST F TESTS ----
@@ -166,7 +166,26 @@ f_n.emm <- emmeans(f_n.lm, ~ crop)
 # cld
 f_n.cld <- as.data.frame(multcomp::cld(f_n.emm, Letters = letters, adjust = "sidak"))
 
+# tea biomass
+# extract estimated marginal means for the interaction
+t_b.emm <- emmeans(t_b.lm, ~ crop * location)
+# cld
+t_b.cld <- as.data.frame(multcomp::cld(t_b.emm, Letters = letters, adjust = "sidak"))
 
+# tea carbon
+# extract estimated marginal means for crop
+t_c.emm <- emmeans(t_c.lm, ~ crop)
+# cld
+t_c.cld <- as.data.frame(multcomp::cld(t_c.emm, Letters = letters, adjust = "sidak"))
+# these results look funky i want to pull out values for the pairwise comparisons
+t_c.pw <- pairs(emmeans(t_c.lm, ~ crop))
+t_c.pw
+
+# tea nitrogen
+# extract estimated marginal means for the interaction
+t_n.emm <- emmeans(t_n.lm, ~ crop * location) 
+# cld
+t_n.cld <- as.data.frame(multcomp::cld(t_n.emm, Letters = letters, adjust = "Sidak"))
 
 
 
@@ -174,6 +193,8 @@ f_n.cld <- as.data.frame(multcomp::cld(f_n.emm, Letters = letters, adjust = "sid
 
 
 # SOME PRELIMINARY PLOTTING ----
+
+# forage biomass
 a <-f_b.cld %>%
   ggplot(aes(crop, emmean)) +
   geom_point(aes(color = crop)) +
@@ -190,6 +211,7 @@ a <-f_b.cld %>%
 
 a
 
+# forage carbon by crop
 b <- f_c_crop.cld %>%
   ggplot(aes(crop, emmean)) +
   geom_point(aes(color = crop)) +
@@ -206,6 +228,7 @@ b <- f_c_crop.cld %>%
 
 b
 
+# forage carbon by location
 c <- f_c_location.cld %>%
   ggplot(aes(location, emmean)) +
   geom_point() +
@@ -219,6 +242,7 @@ c <- f_c_location.cld %>%
 
 c
 
+# forage nitrogen
 d <- f_n.cld %>%
   ggplot(aes(crop, emmean)) +
   geom_point(aes(color = crop)) +
@@ -237,10 +261,55 @@ d
 
 a + b + c + d + plot_layout(guides = "collect")
 
+# tea biomass interaction
+t_b.cld %>%
+  ggplot(aes(crop, emmean, color = crop, shape = location)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.3), 
+                position = position_dodge2(width = 0.3)) +
+  labs(y = "Forage Grams of Nitrogen Lost per Day") +
+  # geom_text(aes(x = 1, y = 0.025, label = "a"), size = 4) +
+  # geom_text(aes(x = 2, y = 0.025, label = "a"), size = 4) +
+  # geom_text(aes(x = 3, y = 0.025, label = "a"), size = 4) +
+  # geom_text(aes(x = 4, y = 0.025, label = "b"), size = 4) +
+  # geom_text(aes(x = 5, y = 0.025, label = "a"), size = 4) +
+  theme_light() +
+  theme(text = element_text(size = 17),
+        panel.grid = element_blank())
 
+# tea carbon
+t_c.cld %>%
+  ggplot(aes(crop, emmean)) +
+  geom_point(aes(color = crop)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1, color = crop)) +
+  geom_boxplot(data = t_c.df, aes(crop, estimate), width = 0.1, position = position_nudge(x = -0.15)) +
+  geom_point(data = t_c.df, aes(crop, estimate), position = position_nudge(x = -0.35), alpha = 0.5) +
+  labs(y = "Tea Grams of Carbon Lost per Day") +
+  geom_text(aes(x = 1.1, y = 0.02914319, label = "a"), size = 4, color = "red") +
+  geom_text(aes(x = 2.1, y = 0.02586301, label = "a"), size = 4, color = "red") +
+  geom_text(aes(x = 3.1, y = 0.02417445, label = "a"), size = 4, color = "red") +
+  geom_text(aes(x = 4.1, y = 0.02379570, label = "a"), size = 4, color = "red") +
+  geom_text(aes(x = 5.1, y = 0.02444851, label = "a"), size = 4, color = "red") +
+  coord_cartesian(ylim = c(0, 0.035)) +
+  theme_light() +
+  theme(text = element_text(size = 17),
+        panel.grid = element_blank())
 
-
-
+# black boxplot
+geom_boxplot(
+  data = PlantGrowth,
+  aes(y = weight, x = group),
+  width = 0.05,
+  outlier.shape = NA,
+  position = position_nudge(x = -0.1)
+) +
+  # red mean value
+  geom_point(
+    data = model_means_cld,
+    aes(y = emmean, x = group),
+    size = 2,
+    color = "red"
+  ) +
 
 
 
