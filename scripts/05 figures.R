@@ -139,103 +139,240 @@ f_n.plot <- f_n.cld %>%
 
 f_n.plot
 
-forage.plot <- f_b.plot + f_c_crop.plot + f_n.plot
-forage.plot
+# forage plot 
+f.plot <- f_b.plot + f_c_crop.plot + f_n.plot
+f.plot
 
-ggsave(forage.plot, file = "figures/forage final.pdf", 
-       width = 7, height = 7)
-
+# forage carbon for location plot
+f_c_location.plot
 
 # tea biomass ----
+
+# isu
 t_b_isu.plot <- t_b.cld %>%
   filter(location == "ISU") %>%
-  ggplot(aes(crop, emmean, shape = location)) +
+  ggplot(aes(crop, emmean)) +
   geom_point(position = position_dodge2(width = 0.5)) +
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.5), 
                 position = position_dodge2(width = 0.5)) +
-  # geom_point(data = t_b.df, aes(crop, estimate), size = 3, 
-  #            position = position_nudge(x = -0.25), alpha = 0.5) +
-  geom_text(aes(x = 3.3, y = 0.02428049, label = "c"), size = 2.5) +
+  geom_boxplot(data = subset(t_b.df, location == "ISU"), aes(crop, estimate), 
+               width = 0.2, position = position_nudge(x = -0.3)) +
+  geom_text(aes(x = 1.3, y = 0.01577899, label = "abc"), size = 2.5) +
+  geom_text(aes(x = 2.3, y = 0.02137316, label = "bc"), size = 2.5) +
+  geom_text(aes(x = 3.3, y = 0.02281235, label = "c"), size = 2.5) +
   geom_text(aes(x = 4.3, y = 0.01569910, label = "abc"), size = 2.5) +
-  geom_text(aes(x = 4.3, y = 0.01271000, label = "a"), size = 2.5) +
   geom_text(aes(x = 5.3, y = 0.01252059, label = "a"), size = 2.5) +
-  geom_text(aes(x = 5.3, y = 0.01161667, label = "a"), size = 2.5) +
-  coord_cartesian(ylim = c(0, 0.03)) +
+  coord_cartesian(ylim = c(0, 0.04)) +
   labs(x = "Crop", y = "Tea Biomass Loss (g/d)") +
+  ggtitle(label = "Illinois State University") +
   theme
 
 t_b_isu.plot
 
-
-test.plot <- t_b.cld %>%
+# wiu
+t_b_wiu.plot <- t_b.cld %>%
   filter(location == "WIU") %>%
-  ggplot(aes(crop, emmean, shape = location)) +
+  ggplot(aes(crop, emmean)) +
   geom_point(position = position_dodge2(width = 0.5)) +
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.5), 
                 position = position_dodge2(width = 0.5)) +
-  # geom_point(data = t_b.df, aes(crop, estimate), size = 3, 
-  #            position = position_nudge(x = -0.25), alpha = 0.5) +
-  geom_text(aes(x = 1.3, y = 0.01577899, label = "abc"), size = 2.5) +
+  geom_boxplot(data = subset(t_b.df, location == "WIU"), aes(crop, estimate), 
+               width = 0.2, position = position_nudge(x = -0.3)) +
   geom_text(aes(x = 1.3, y = 0.01304710, label = "ab"), size = 2.5) +
-  geom_text(aes(x = 2.3, y = 0.02137316, label = "bc"), size = 2.5) +
   geom_text(aes(x = 2.3, y = 0.01157267, label = "a"), size = 2.5) +
-  geom_text(aes(x = 3.3, y = 0.02281235, label = "c"), size = 2.5) +
   geom_text(aes(x = 3.3, y = 0.02428049, label = "c"), size = 2.5) +
-  geom_text(aes(x = 4.3, y = 0.01569910, label = "abc"), size = 2.5) +
   geom_text(aes(x = 4.3, y = 0.01271000, label = "a"), size = 2.5) +
-  geom_text(aes(x = 5.3, y = 0.01252059, label = "a"), size = 2.5) +
   geom_text(aes(x = 5.3, y = 0.01161667, label = "a"), size = 2.5) +
-  coord_cartesian(ylim = c(0, 0.03)) +
+  coord_cartesian(ylim = c(0, 0.04)) +
   labs(x = "Crop", y = "Tea Biomass Loss (g/d)") +
+  ggtitle(label = "Western Illinois University") +
   theme
 
-test.plot
+t_b_wiu.plot
 
-t_b.plot + test.plot
+# tea biomass plot full
+t_b.plot <- t_b_isu.plot + t_b_wiu.plot
+
+t_b.plot
 
 # tea carbon
 t_c.plot <- t_c.cld %>%
   ggplot(aes(crop, emmean)) +
   geom_point() +
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1)) +
-  # geom_boxplot(data = t_c.df, aes(crop, estimate), width = 0.1, position = position_nudge(x = -0.15)) +
-  # geom_point(data = t_c.df, aes(crop, estimate), position = position_nudge(x = -0.25), alpha = 0.5) +
-  geom_text(aes(x = 1.3, y = 0.02379570, label = "a"), size = 4) +
-  geom_text(aes(x = 2.3, y = 0.02914319, label = "b"), size = 4) +
-  geom_text(aes(x = 3.3, y = 0.02586301, label = "b"), size = 4) +
-  geom_text(aes(x = 4.3, y = 0.02417445, label = "b"), size = 4) +
-  geom_text(aes(x = 5.3, y = 0.02444851, label = "b"), size = 4) +
-  coord_cartesian(ylim = c(0, 0.03)) +
+  geom_boxplot(data = t_c.df, aes(crop, estimate), width = 0.1, position = position_nudge(x = -0.15)) +
+  geom_text(aes(x = 1.3, y = 0.02379570, label = "a"), size = 2.5) +
+  geom_text(aes(x = 2.3, y = 0.02914319, label = "a"), size = 2.5) +
+  geom_text(aes(x = 3.3, y = 0.02586301, label = "a"), size = 2.5) +
+  geom_text(aes(x = 4.3, y = 0.02417445, label = "a"), size = 2.5) +
+  geom_text(aes(x = 5.3, y = 0.02444851, label = "a"), size = 2.5) +
+  coord_cartesian(ylim = c(0, 0.04)) +
   labs(x = "Crop", y = "Tea Carbon Loss (g/d)") +
   theme
 
 t_c.plot
 
 # tea nitrogen ----
-t_n.plot <- t_n.cld %>%
-  ggplot(aes(crop, emmean, shape = location)) +
+
+# isu
+t_n_isu.plot <- t_n.cld %>%
+  filter(location == "ISU") %>%
+  ggplot(aes(crop, emmean)) +
   geom_point(position = position_dodge2(width = 0.1)) +
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1), 
                 position = position_dodge2(width = 0.1)) +
-  # geom_point(data = t_n.df, aes(crop, estimate), size = 3, 
-  #            position = position_nudge(x = -0.25), alpha = 0.5) +
-  geom_text(aes(x = 0.7, y = 0.008673201, label = "a"), size = 4) +
-  geom_text(aes(x = 1.3, y = 0.011442534, label = "a"), size = 4) +
-  geom_text(aes(x = 1.7, y = 0.022304709, label = "c"), size = 4) +
-  geom_text(aes(x = 2.3, y = 0.022814062, label = "c"), size = 4) +
-  geom_text(aes(x = 2.7, y = 0.011499208, label = "ab"), size = 4) +
-  geom_text(aes(x = 3.3, y = 0.013900923, label = "abc"), size = 4) +
-  geom_text(aes(x = 3.7, y = 0.015657190, label = "abc"), size = 4) +
-  geom_text(aes(x = 4.3, y = 0.022712713, label = "c"), size = 4) +
-  geom_text(aes(x = 4.7, y = 0.016414369, label = "abc"), size = 4) +
-  geom_text(aes(x = 5.3, y = 0.021067147, label = "bc"), size = 4) +
-  coord_cartesian(ylim = c(0, 0.03)) +
+  geom_boxplot(data = subset(t_n.df, location == "ISU"), aes(crop, estimate), 
+               width = 0.2, position = position_nudge(x = -0.3)) +
+  geom_text(aes(x = 1.3, y = 0.011442534, label = "a"), size = 2.5) +
+  geom_text(aes(x = 2.3, y = 0.022814062, label = "c"), size = 2.5) +
+  geom_text(aes(x = 3.3, y = 0.013900923, label = "abc"), size = 2.5) +
+  geom_text(aes(x = 4.3, y = 0.015657190, label = "abc"), size = 2.5) +
+  geom_text(aes(x = 5.3, y = 0.021067147, label = "bc"), size = 2.5) +
+  coord_cartesian(ylim = c(0, 0.04)) +
   labs(x = "Crop", y = "Tea Nitrogen Loss (g/d)") +
+  ggtitle(label = "Illinois State University") +
   theme
+
+t_n_isu.plot
+
+# wiu
+t_n_wiu.plot <- t_n.cld %>%
+  filter(location == "WIU") %>%
+  ggplot(aes(crop, emmean)) +
+  geom_point(position = position_dodge2(width = 0.1)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1), 
+                position = position_dodge2(width = 0.1)) +
+  geom_boxplot(data = subset(t_n.df, location == "WIU"), aes(crop, estimate), 
+               width = 0.2, position = position_nudge(x = -0.3)) +
+  geom_text(aes(x = 1.3, y = 0.008673201, label = "a"), size = 2.5) +
+  geom_text(aes(x = 2.3, y = 0.022304709, label = "c"), size = 2.5) +
+  geom_text(aes(x = 3.3, y = 0.011499208, label = "ab"), size = 2.5) +
+  geom_text(aes(x = 4.3, y = 0.022712713, label = "c"), size = 2.5) +
+  geom_text(aes(x = 5.3, y = 0.016414369, label = "abc"), size = 2.5) +
+  coord_cartesian(ylim = c(0, 0.04)) +
+  labs(x = "Crop", y = "Tea Nitrogen Loss (g/d)") +
+  ggtitle(label = "Western Illinois University") +
+  theme
+
+t_n_wiu.plot
+
+# tea nitrogen plot 
+t_n.plot <- t_n_isu.plot + t_n_wiu.plot
 
 t_n.plot
 
+
+
 tea.plot <- t_b.plot + t_c.plot + t_n.plot + plot_layout(guides = "collect")
+
+# CALLING FINAL NUTRIENT PLOTS ----
+f.plot
+
+f_c_location.plot
+
+t_b.plot
+
+t_c.plot
+
+t_n.plot
+
+# CREATING DECAY PLOTS -----
+
+# read in the data ----
+decomp.df <- read_csv("output/pct remaining data.csv") %>% 
+  arrange(location, crop, block, days)
+
+# interpolate data from the prior value to the next value to fill missing na values using 
+# the na.approx function from the zoo package
+decomp.df <- decomp.df %>%
+  group_by(location, crop, block) %>%
+  mutate(across(c(forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
+                  tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain), 
+                ~ zoo::na.approx(., na.rm = FALSE))) %>%
+  mutate(crop = as.factor(crop)) %>%
+  mutate(crop = fct_relevel(crop, "PCRO", "AR", "CR", "GPC", "WPC")) %>%
+
+  ungroup()
+
+# select only the data we want 
+decomp.df <- decomp.df %>%
+  select(location, crop, block, days, forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
+         tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain)
+
+# pivot longer 
+decomp_long.df <- decomp.df %>%
+  pivot_longer(cols = c(forage_pct_remain, forage_pct_n_remain, forage_pct_c_remain,
+                        tea_pct_remain, tea_pct_n_remain, tea_pct_c_remain),
+               names_to = "variable",
+               values_to = "value")
+
+# plotting 
+isu.plot <- decomp_long.df %>%
+  filter(location == "ISU") %>%
+  ggplot(aes(days, value, color = as.factor(crop))) +
+  geom_smooth(aes(days, value, color = as.factor(crop)),
+              method = "nls", formula = y ~ 100 * exp(-k*x),
+              method.args = list(start = c(k=0.01)), se = FALSE) +
+  # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  labs(x = "Days after Placement", y = "Percent Remaining") +
+  ggtitle(label = "Illinois State University") +
+  theme +
+  facet_wrap(~variable, labeller = labeller(variable = c(forage_pct_c_remain = "Forage Carbon",
+                                                         forage_pct_n_remain = "Forage Nitrogen",
+                                                         forage_pct_remain = "Forage Biomass",
+                                                         tea_pct_c_remain = "Tea Carbon",
+                                                         tea_pct_n_remain = "Tea Nitrogen",
+                                                         tea_pct_remain = "Tea Biomass")))
+
+wiu.plot <- decomp_long.df %>%
+  filter(location == "WIU") %>%
+  ggplot(aes(days, value, color = as.factor(crop))) +
+  geom_smooth(aes(days, value, color = as.factor(crop)),
+              method = "nls", formula = y ~ 100 * exp(-k*x),
+              method.args = list(start = c(k=0.01)), se = FALSE) +
+  # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
+  # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
+  labs(x = "Days after Placement", y = "Percent Remaining") +
+  ggtitle(label = "Western Illinois University") +
+  theme +
+  facet_wrap(~variable, labeller = labeller(variable = c(forage_pct_c_remain = "Forage Carbon",
+                                                         forage_pct_n_remain = "Forage Nitrogen",
+                                                         forage_pct_remain = "Forage Biomass",
+                                                         tea_pct_c_remain = "Tea Carbon",
+                                                         tea_pct_n_remain = "Tea Nitrogen",
+                                                         tea_pct_remain = "Tea Biomass")))
+
+isu.plot + wiu.plot + plot_layout(guides = "collect")
+  
+
+
+# create plot 
+decomp.df %>%
+  filter(location == "ISU") %>%
+  ggplot(mapping = aes(x=days, y=forage_pct_c_remain, color=as.factor(crop))) +
+  # stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
+  # stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "line") +
+  stat_summary(fun = mean, geom = "point") +
+  theme_classic() +
+  scale_x_continuous(breaks = seq(0, 45, 5)) +
+  geom_smooth(aes(x = days, y = forage_pct_c_remain, color =as.factor(crop)),
+              method = "nls", formula = y ~ 100 * exp(-k*x),
+              method.args = list(start = c(k=0.01)), se = FALSE)
+
+
+
+# SAVE THINGS ----
+
+ggsave(forage.plot, file = "figures/forage final.pdf", 
+       width = 7, height = 7)
+
+ggsave(tea_biomass.plot, file = "figures/tea biomass final.pdf",
+       width = 7, height = 7)
+
+
+
+
 
 ggsave(tea.plot, file = "figures/tea final.pdf", 
        width = 7, height = 7)
