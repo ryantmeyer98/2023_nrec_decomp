@@ -345,43 +345,40 @@ wiu.plot <- decomp_long.df %>%
                                                          tea_pct_n_remain = "Tea Nitrogen",
                                                          tea_pct_remain = "Tea Biomass")))
 
-isu.plot + wiu.plot + plot_layout(guides = "collect")
+pct_rem.plot <- isu.plot + wiu.plot + plot_layout(guides = "collect")
+
+pct_rem.plot 
   
-
-
-# create plot 
-decomp.df %>%
-  filter(location == "ISU") %>%
-  ggplot(mapping = aes(x=days, y=forage_pct_c_remain, color=as.factor(crop))) +
-  # stat_summary(fun = mean, na.rm = TRUE, geom = "point") +
-  # stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "line") +
-  stat_summary(fun = mean, geom = "point") +
-  theme_classic() +
-  scale_x_continuous(breaks = seq(0, 45, 5)) +
-  geom_smooth(aes(x = days, y = forage_pct_c_remain, color =as.factor(crop)),
-              method = "nls", formula = y ~ 100 * exp(-k*x),
-              method.args = list(start = c(k=0.01)), se = FALSE)
-
-
-
 # SAVE THINGS ----
 
-ggsave(forage.plot, file = "figures/forage final.pdf", 
+f.plot
+
+f_c_location.plot
+
+t_b.plot
+
+t_c.plot
+
+t_n.plot
+
+
+ggsave(f.plot, file = "figures/forage final.pdf",
        width = 7, height = 7)
 
-ggsave(tea_biomass.plot, file = "figures/tea biomass final.pdf",
+ggsave(f_c_location.plot, file = "figures/forage location.pdf",
        width = 7, height = 7)
 
-
-
-
-
-ggsave(tea.plot, file = "figures/tea final.pdf", 
+ggsave(t_b.plot, file = "figures/tea biomass.pdf", 
        width = 7, height = 7)
 
+ggsave(t_c.plot, file = "figures/tea carbon.pdf", 
+       width = 7, height = 7)
 
-  
+ggsave(t_n.plot, file = "figures/tea nitrogen.pdf", 
+       width = 7, height = 7)
 
+ggsave(pct_rem.plot, file = "figures/pct remaining.pdf",
+       width = 7, height = 7)
 
 
 
