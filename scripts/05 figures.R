@@ -315,8 +315,9 @@ isu.plot <- decomp_long.df %>%
               method.args = list(start = c(k=0.01)), se = FALSE) +
   # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  labs(x = "Days after Placement", y = "Percent Remaining") +
+  labs(x = "Days after Placement", y = "Percent Remaining", color = "Crop") +
   ggtitle(label = "Illinois State University") +
+  coord_cartesian(ylim = c(0, 100)) +
   theme +
   facet_wrap(~variable, labeller = labeller(variable = c(forage_pct_c_remain = "Forage Carbon",
                                                          forage_pct_n_remain = "Forage Nitrogen",
@@ -333,8 +334,9 @@ wiu.plot <- decomp_long.df %>%
               method.args = list(start = c(k=0.01)), se = FALSE) +
   # stat_summary(fun = mean, geom = "point", na.rm = TRUE) +
   # stat_summary(fun.data = mean_se, geom = "errorbar", na.rm = TRUE) +
-  labs(x = "Days after Placement", y = "Percent Remaining") +
+  labs(x = "Days after Placement", y = "Percent Remaining", color = "Crop") +
   ggtitle(label = "Western Illinois University") +
+  coord_cartesian(ylim = c(0, 100)) +
   theme +
   facet_wrap(~variable, labeller = labeller(variable = c(forage_pct_c_remain = "Forage Carbon",
                                                          forage_pct_n_remain = "Forage Nitrogen",
