@@ -263,7 +263,7 @@ t_n_wiu.plot <- t_n.cld %>%
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1), 
                 position = position_dodge2(width = 0.1)) +
   geom_boxplot(data = subset(t_n.df, location == "WIU"), aes(crop, estimate), 
-               width = 0.1, position = position_nudge(x = -0.3),
+               width = 0., position = position_nudge(x = -0.3),
                fill = "grey90", alpha = 0.5, size = 0.1) +
   geom_text(aes(x = 1.3, y = 0.008673201, label = "a"), size = 2.5) +
   geom_text(aes(x = 2.3, y = 0.022304709, label = "c"), size = 2.5) +
