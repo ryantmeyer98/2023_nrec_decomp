@@ -218,12 +218,9 @@ data.df %>%
 
 # initial C:N ratios?
 data.df %>%
-  group_by(days) %>%
-  # filter(days == 0) %>%
-  summarize(cn = mean(tea_pct_c, na.rm = TRUE) / mean(tea_pct_n, na.rm = TRUE))
-
-
-
+  group_by(crop, location) %>%
+  filter(days == 0) %>%
+  summarize(cn = mean(forage_pct_c, na.rm = TRUE) / mean(forage_pct_n, na.rm = TRUE))
 
 
 

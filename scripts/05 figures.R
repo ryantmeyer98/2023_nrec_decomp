@@ -89,7 +89,8 @@ f_b.plot <- f_b.cld %>%
   geom_text(aes(x = 3.3, y = 0.009586184, label = "b"), size = 2.5) +
   geom_text(aes(x = 4.3, y = 0.005874195, label = "b"), size = 2.5) +
   geom_text(aes(x = 5.3, y = 0.006013715, label = "b"), size = 2.5) +
-  labs(x = "", y = "Forage Biomass Loss (%/d)") +
+  labs(x = "", y = "Cover Crop Biomass Loss (%/d)") +
+  ggtitle(label = "A)") +
   theme
 
 f_b.plot
@@ -107,7 +108,9 @@ f_c_crop.plot <- f_c_crop.cld %>%
   geom_text(aes(x = 3.3, y = 0.01090678, label = "a"), size = 2.5) +
   geom_text(aes(x = 4.3, y = 0.01310649, label = "ab"), size = 2.5) +
   geom_text(aes(x = 5.3, y = 0.01171767, label = "ab"), size = 2.5) +
-  labs(x = "Crop", y = "Forage Carbon Loss (%/d)") +
+  labs(x = "Crop", y = "Cover Crop Carbon Loss (%/d)") +
+  ggtitle(label = "B)") +
+  
   theme
 
 f_c_crop.plot
@@ -117,12 +120,14 @@ f_c_location.plot <- f_c_location.cld %>%
   ggplot(aes(location, emmean)) +
   geom_point() +
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1)) +
-  geom_boxplot(data = f_c.df, aes(location, estimate), width = 0.1, position = position_nudge(x = -0.3),
+  geom_boxplot(data = f_c.df, aes(location, estimate), width = 0.05, position = position_nudge(x = -0.15),
                fill = "grey90", alpha = 0.5, size = 0.1) +
-  geom_text(aes(x = 1.3, y = 0.01292263, label = "a"), size = 2.5) +
-  geom_text(aes(x = 2.3, y = 0.01494285, label = "b"), size = 2.5) +
-  coord_cartesian(ylim = c(0, 0.04)) +
-  labs(x = "Crop", y = "Forage Carbon Loss by Location (%/d)") +
+  geom_text(aes(x = 1.1, y = 0.01292263, label = "a"), size = 2.5) +
+  geom_text(aes(x = 2.1, y = 0.01494285, label = "b"), size = 2.5) +
+  coord_cartesian(ylim = c(0, 0.025)) +
+  scale_x_discrete(labels = c("Lexington", "Macomb")) +
+  labs(x = "Crop", y = "Cover Crop Carbon Loss by Location (%/d)") +
+  
   theme
 
 f_c_location.plot
@@ -134,14 +139,16 @@ f_n.plot <- f_n.cld %>%
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1)) +
   geom_boxplot(data = f_n.df, aes(crop, estimate), width = 0.1, position = position_nudge(x = -0.3),
                fill = "grey90", alpha = 0.5, size = 0.1) +
-  geom_text(aes(x = 1.3, y = 0.020976416, label = "a"), size = 2.5) +
-  geom_text(aes(x = 2.3, y = 0.008756596, label = "b"), size = 2.5) +
-  geom_text(aes(x = 3.3, y = 0.003867444, label = "b"), size = 2.5) +
-  geom_text(aes(x = 4.3, y = -0.000330541, label = "b"), size = 2.5) +
-  geom_text(aes(x = 5.3, y = 0.004603586, label = "b"), size = 2.5) +
+  geom_text(aes(x = 1.3, y = 0.020976416, label = "a"), size = 2) +
+  geom_text(aes(x = 2.3, y = 0.008756596, label = "b"), size = 2) +
+  geom_text(aes(x = 3.3, y = 0.003867444, label = "b"), size = 2) +
+  geom_text(aes(x = 4.3, y = -0.000330541, label = "b"), size = 2) +
+  geom_text(aes(x = 5.3, y = 0.004603586, label = "b"), size = 2) +
   coord_cartesian(ylim = c(0, 0.04)) +
-  labs(x = "", y = "Forage Nitrogen Loss (%/d)") +
+  labs(x = "", y = "Cover Crop Nitrogen Loss (%/d)") +
+  ggtitle(label = "C)") +
   theme
+
 
 f_n.plot
 
@@ -263,7 +270,7 @@ t_n_wiu.plot <- t_n.cld %>%
   geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE, width = 0.1), 
                 position = position_dodge2(width = 0.1)) +
   geom_boxplot(data = subset(t_n.df, location == "WIU"), aes(crop, estimate), 
-               width = 0., position = position_nudge(x = -0.3),
+               width = 0.1, position = position_nudge(x = -0.3),
                fill = "grey90", alpha = 0.5, size = 0.1) +
   geom_text(aes(x = 1.3, y = 0.008673201, label = "a"), size = 2.5) +
   geom_text(aes(x = 2.3, y = 0.022304709, label = "c"), size = 2.5) +
